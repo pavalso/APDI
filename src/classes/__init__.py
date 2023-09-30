@@ -1,4 +1,4 @@
-from .blob import Blob
-from .file_blob import FileBlob
+from ._blob import _Blob
+from ._file_blob import _FileBlob
 
-__all__ = ['Blob', 'FileBlob']
+__all__ = ['_Blob', '_FileBlob']
