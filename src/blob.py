@@ -1,5 +1,10 @@
 import uuid
 
+try:
+    import exceptions
+except ImportError:
+    from src import exceptions
+
 
 try:
     from db.dao import DAO
@@ -59,3 +64,9 @@ class Blob(_FileBlob):
         DAO.newBlob(self.id, self.owner, self.public)
         self._in_db = True
 
+    def __str__(self) -> str: # pragma: no cover
+        return '%s Blob %s owner: %s, in database: %s' % (
+            'Public' if self.public else 'Private', 
+            self.id, 
+            self.owner, 
+            'Yes' if self._in_db else 'No')
