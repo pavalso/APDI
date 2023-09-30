@@ -16,7 +16,7 @@ except ImportError:
     from src.classes._file_blob import _FileBlob
 
 
-class Blob(_FileBlob):
+class _DbBlob(_FileBlob):
     """
     Represents a Blob object that can be stored in a database.
 
@@ -55,12 +55,12 @@ class Blob(_FileBlob):
 
         self.owner = owner
         self.public = public
-        self.allowed_users = allowed_users if allowed_users else []
+        self.allowed_users = allowed_users
 
         self._in_db = in_db
 
     @staticmethod
-    def create(owner, public: bool = False, allowed_users: list = None) -> 'Blob':
+    def create(id_: str, owner, public: bool = False, allowed_users: list = None) -> None:
         """
         Creates a new Blob object and inserts it into the database.
 
@@ -72,12 +72,10 @@ class Blob(_FileBlob):
         Returns:
             Blob: The newly created Blob object.
         """
-        _b = Blob(str(uuid.uuid4()), owner, public, allowed_users)
-        _b.insert()
-        return _b
+        DAO.new_blob(id_, owner, public)
 
     @staticmethod
-    def fetch(_id: str) -> 'Blob':
+    def fetch(_id: str) -> '_DbBlob':
         """
         Fetches a Blob object from the database by its ID.
 
@@ -95,7 +93,7 @@ class Blob(_FileBlob):
         if _r is None:
             raise exceptions.BlobNotFoundError(id)
 
-        _b = Blob(*_r, in_db=True)
+        _b = _DbBlob(*_r, in_db=True)
 
         return _b
 
@@ -112,16 +110,6 @@ class Blob(_FileBlob):
         Updates the Blob object in the database.
         """
         DAO.update_blob(self.id_, self.owner, self.public)
-
-    def insert(self) -> None:
-        """
-        Inserts the Blob object into the database.
-        """
-        if self.is_in_db:
-            return
-
-        DAO.new_blob(self.id_, self.owner, self.public)
-        self._in_db = True
 
     def __str__(self) -> str: # pragma: no cover
         """
