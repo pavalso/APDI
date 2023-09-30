@@ -1,7 +1,7 @@
 import sqlite3
 
 
-class __Dao:
+class _Dao:
 
     BLOBS = 'blobs'
 
@@ -13,43 +13,43 @@ class __Dao:
         self._conn = sqlite3.connect(db_name)
         self._cursor = self._conn.cursor()
         self._cursor.execute(
-            '''CREATE TABLE IF NOT EXISTS %s (   
+            f'''CREATE TABLE IF NOT EXISTS {self.BLOBS} (   
                 id TEXT,
                 owner TEXT, 
                 public INTEGER, 
-                PRIMARY KEY (id))''' % self.BLOBS)
+                PRIMARY KEY (id))''')
 
-    def newBlob(self, id: str, owner: str, public: bool = False) -> None:
+    def new_blob(self, _id: str, owner: str, public: bool = False) -> None:
         self._cursor.execute(
-            '''INSERT INTO %s 
-            VALUES (?, ?, ?)''' % self.BLOBS, 
-            (id, owner, public))
+            f'''INSERT INTO {self.BLOBS} 
+            VALUES (?, ?, ?)''',
+            (_id, owner, public))
         self._conn.commit()
 
-    def getBlob(self, id: str) -> tuple:
+    def get_blob(self, _id: str) -> tuple:
         self._cursor.execute(
-            '''SELECT * 
-            FROM %s 
-            WHERE id=?''' % self.BLOBS, 
-            (id,))
+            f'''SELECT * 
+            FROM {self.BLOBS} 
+            WHERE id=?''',
+            (_id,))
         return self._cursor.fetchone()
-    
-    def updateBlob(self, id: str, owner: str, public: bool = False) -> None:
+
+    def update_blob(self, _id: str, owner: str, public: bool = False) -> None:
         self._cursor.execute(
-            '''UPDATE %s 
+            f'''UPDATE {self.BLOBS}
             SET owner=?, public=? 
-            WHERE id=?''' % self.BLOBS, 
-            (owner, public, id))
+            WHERE id=?''',
+            (owner, public, _id))
         self._conn.commit()
 
-    def deleteBlob(self, id: str) -> None:
+    def delete_blob(self, _id: str) -> None:
         self._cursor.execute(
-            '''DELETE FROM %s 
-            WHERE id=?''' % self.BLOBS,
-            (id,))
+            f'''DELETE FROM {self.BLOBS}
+            WHERE id=?''',
+            (_id,))
         self._conn.commit()
 
     def close(self) -> None:
         self._conn.close()
 
-DAO = __Dao()
+DAO = _Dao()

@@ -11,27 +11,27 @@ except ImportError:
 _SUFIX = 'blob'
 _BLOBS_DIR = 'storage'
 
+def _open(func) -> None:
+    def wrapper(blob, *args, **kwargs):
+        blob.open()
+        return func(blob, *args, **kwargs)
+    return wrapper
+
 class _FileBlob(_Blob):
 
     _fp: io.FileIO = None
 
     @property
-    def id(self) -> str:
+    def id_(self) -> str:
         return self.__id
 
-    def __init__(self, id: str) -> None:
+    def __init__(self, _id: str) -> None:
         super().__init__()
 
-        self.__id = id
+        self.__id = _id
 
-        self.file_name = '%s.%s' % (id, _SUFIX)
+        self.file_name = f'{_id}.{_SUFIX}'
         self.file_path = os.path.join(_BLOBS_DIR, self.file_name)
-
-    def _open(func) -> None:
-        def f(blob, *args, **kwargs):
-            blob.open()
-            return func(blob, *args, **kwargs)
-        return f
 
     def open(self) -> None:
         if self._fp is not None and not self._fp.closed:
@@ -40,7 +40,7 @@ class _FileBlob(_Blob):
         os.makedirs(_BLOBS_DIR, exist_ok=True)
 
         self._fp = io.FileIO(
-            self.file_path, 
+            self.file_path,
             mode='a+b')
 
     def read(self, /) -> bytes:

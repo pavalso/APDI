@@ -31,7 +31,7 @@ class TestDB(unittest.TestCase):
     def test_new_blob(self):
         _b = Blob.create(self.default_blob.owner)
         self.assertEqual(_b.owner, self.default_blob.owner)
-        self.assertTrue(TestDB._exists_in_db(_b.id))
+        self.assertTrue(TestDB._exists_in_db(_b.id_))
 
     def test_insert_on_existing_blob(self):
         self.assertIsNone(self.default_blob._insert())
@@ -41,30 +41,30 @@ class TestDB(unittest.TestCase):
         self.assertRaises(AttributeError, setattr, _b, 'id', '123456')
 
     def test_unique_id(self):
-        self.assertRaises(IntegrityError, TestDB._raw_insert, self.default_blob.id, None, None)
+        self.assertRaises(IntegrityError, TestDB._raw_insert, self.default_blob.id_, None, None)
 
     def test_update_blob(self):
         _b = Blob.create(self.default_blob.owner)
         _old_owner = _b.owner
         _b.owner = _old_owner + '_new'
         _b.update()
-        self.assertNotEqual(TestDB._raw_select(_b.id)[0][1], _old_owner)
+        self.assertNotEqual(TestDB._raw_select(_b.id_)[0][1], _old_owner)
 
     def test_fetch_blob(self):
         _b = Blob.create(self.default_blob.owner)
-        _fetched = Blob.fetch(_b.id)
-        self.assertEqual(_b.id, _fetched.id)
+        _fetched = Blob.fetch(_b.id_)
+        self.assertEqual(_b.id_, _fetched.id_)
 
     def test_fetch_missing_blob(self):
         self.assertRaises(exceptions.BlobNotFoundError, Blob.fetch, 'not_existing')
 
     def test_delete_blob(self):
         self.default_blob.delete()
-        self.assertFalse(TestDB._exists_in_db(self.default_blob.id))
+        self.assertFalse(TestDB._exists_in_db(self.default_blob.id_))
 
     def test_close(self):
         DAO.close()
-        self.assertRaises(ProgrammingError, DAO.getBlob, 'x')
+        self.assertRaises(ProgrammingError, DAO.get_blob, 'x')
 
     def tearDown(self):
         DAO.close()
