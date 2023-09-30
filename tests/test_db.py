@@ -12,7 +12,7 @@ class TestDB(unittest.TestCase):
     def setUp(self):
         DAO.connect(':memory:')
         self.default_blob = Blob('x', 'me')
-        self.default_blob._insert()
+        self.default_blob.insert()
 
     @staticmethod
     def _raw_select(id):
@@ -34,11 +34,11 @@ class TestDB(unittest.TestCase):
         self.assertTrue(TestDB._exists_in_db(_b.id_))
 
     def test_insert_on_existing_blob(self):
-        self.assertIsNone(self.default_blob._insert())
+        self.assertIsNone(self.default_blob.insert())
 
     def test_id_readonly(self):
         _b = Blob.create(self.default_blob.owner)
-        self.assertRaises(AttributeError, setattr, _b, 'id', '123456')
+        self.assertRaises(AttributeError, setattr, _b, 'id_', '123456')
 
     def test_unique_id(self):
         self.assertRaises(IntegrityError, TestDB._raw_insert, self.default_blob.id_, None, None)
