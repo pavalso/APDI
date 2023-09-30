@@ -49,12 +49,6 @@ class Blob(_FileBlob):
 
         return _b
 
-    def read(self) -> bytes:
-        return super().read()
-
-    def write(self, data: bytes) -> None:
-        super().write(data)
-
     def delete(self) -> None:
         super().delete()
         DAO.delete_blob(self.id_)
