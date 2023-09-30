@@ -3,7 +3,7 @@ import src.exceptions as exceptions
 import unittest
 
 from src.db.dao import DAO
-from src import Blob
+from src import _DbBlob
 from sqlite3 import IntegrityError, ProgrammingError
 
 
@@ -11,8 +11,8 @@ class TestDB(unittest.TestCase):
 
     def setUp(self):
         DAO.connect(':memory:')
-        self.default_blob = Blob('x', 'me')
-        self.default_blob.insert()
+        self.default_blob = _DbBlob('x', 'me')
+        self._raw_insert(self.default_blob.id_, self.default_blob.owner, self.default_blob.public)
 
     @staticmethod
     def _raw_select(id):
@@ -29,34 +29,29 @@ class TestDB(unittest.TestCase):
         return bool(_r)
 
     def test_new_blob(self):
-        _b = Blob.create(self.default_blob.owner)
-        self.assertEqual(_b.owner, self.default_blob.owner)
-        self.assertTrue(TestDB._exists_in_db(_b.id_))
+        _DbBlob.create('y', self.default_blob.owner)
+        self.assertTrue(TestDB._exists_in_db('y'))
+        self.assertEqual(TestDB._raw_select(self.default_blob.id_)[1], self.default_blob.owner)
 
-    def test_insert_on_existing_blob(self):
-        self.assertIsNone(self.default_blob.insert())
+    def test_fetch_blob(self):
+        _fetched = _DbBlob.fetch(self.default_blob.id_)
+        self.assertEqual(self.default_blob.id_, _fetched.id_)
+
+    def test_fetch_missing_blob(self):
+        self.assertRaises(exceptions.BlobNotFoundError, _DbBlob.fetch, 'not_existing')
 
     def test_id_readonly(self):
-        _b = Blob.create(self.default_blob.owner)
+        _b = _DbBlob.fetch(self.default_blob.id_)
         self.assertRaises(AttributeError, setattr, _b, 'id_', '123456')
 
     def test_unique_id(self):
         self.assertRaises(IntegrityError, TestDB._raw_insert, self.default_blob.id_, None, None)
 
     def test_update_blob(self):
-        _b = Blob.create(self.default_blob.owner)
-        _old_owner = _b.owner
-        _b.owner = _old_owner + '_new'
-        _b.update()
-        self.assertNotEqual(TestDB._raw_select(_b.id_)[0][1], _old_owner)
-
-    def test_fetch_blob(self):
-        _b = Blob.create(self.default_blob.owner)
-        _fetched = Blob.fetch(_b.id_)
-        self.assertEqual(_b.id_, _fetched.id_)
-
-    def test_fetch_missing_blob(self):
-        self.assertRaises(exceptions.BlobNotFoundError, Blob.fetch, 'not_existing')
+        _old_owner = self.default_blob.owner
+        self.default_blob.owner = _old_owner + '_new'
+        self.default_blob.update()
+        self.assertNotEqual(_DbBlob.fetch(self.default_blob.id_).owner, _old_owner)
 
     def test_delete_blob(self):
         self.default_blob.delete()
