@@ -3,8 +3,6 @@ This module contains the Blob class, which represents a Blob object
 that can be stored in a database and synchronizes with a file in storage
 """
 
-import uuid
-
 
 try:
     import exceptions
