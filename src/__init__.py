@@ -1,7 +1,11 @@
 try:
-    from db import new_blob
+    from db.dao import DAO
+    from blob import Blob
 except ImportError:
-    from src.db import new_blob
+    from src.db.dao import DAO
+    from src.blob import Blob
 
 
-print(new_blob('me').id)
+if __name__ == '__main__':
+    DAO.connect('pyblob.db')
+    Blob.create('test')
