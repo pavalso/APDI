@@ -1,27 +1,30 @@
 import io
 import os
 
+
 try:
-    from src.classes.blob import Blob
+    from classes._blob import _Blob
 except ImportError:
-    from classes.blob import Blob
+    from src.classes._blob import _Blob
 
 
 _SUFIX = 'blob'
 _BLOBS_DIR = 'storage'
 
-class FileBlob(Blob):
+class _FileBlob(_Blob):
 
     _fp: io.FileIO = None
 
-    def __init__(self, id: str, owner, public: bool = False, allowedUsers: list = None) -> None:
-        super().__init__(id)
+    @property
+    def id(self) -> str:
+        return self.__id
 
-        self.owner = owner
-        self.public = public
-        self.allowedUsers = allowedUsers if allowedUsers else []
+    def __init__(self, id: str) -> None:
+        super().__init__()
 
-        self.file_name = '%s.%s' % (self.id, _SUFIX)
+        self.__id = id
+
+        self.file_name = '%s.%s' % (id, _SUFIX)
         self.file_path = os.path.join(_BLOBS_DIR, self.file_name)
 
     def _open(func) -> None:
@@ -49,11 +52,10 @@ class FileBlob(Blob):
     def write(self, __b: bytes) -> int:
         return super().write(__b)
 
-    def update(self) -> None:
-        return super().update()
-
     def delete(self) -> None:
         _r = super().delete()
         if os.path.isfile(self.file_path):
             os.remove(self.file_path)
         return _r
+
+__export__ = (_FileBlob,)
