@@ -1,3 +1,7 @@
+"""
+This module contains the main entry point for the APDI application.
+"""
+
 try:
     import exceptions
     from db.dao import DAO
