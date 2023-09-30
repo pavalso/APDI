@@ -37,7 +37,7 @@ class Blob(_FileBlob):
         DAO.deleteBlob(self.id)
         self._in_db = False
 
-    def save(self) -> None:
+    def update(self) -> None:
         DAO.updateBlob(self.id, self.owner, self.public)
 
     def _insert(self) -> None:
