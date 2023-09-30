@@ -38,3 +38,7 @@ def test_update(default_blob):
     with pytest.raises(NotImplementedError):
         default_blob.update()
 
+def test_hash(default_blob):
+    _bytes = b'123456' * 1000
+    default_blob.write(_bytes)
+    assert hash(default_blob) == 1404332994597457676
