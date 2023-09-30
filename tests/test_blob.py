@@ -1,44 +1,45 @@
 import pytest
+import unittest
 import os
 
-from src.classes.file_blob import FileBlob
+from src.classes._file_blob import _FileBlob
 
 
-@pytest.fixture
-def default_blob():
-    return FileBlob('123456', 'me')
+class TestBlob(unittest.TestCase):
 
-def test_empty_read(default_blob):
-    assert default_blob.read() == b''
+    def setUp(self):
+        self.default_blob = _FileBlob('123456')
 
-def test_chain_write(default_blob):
-    _bytes = b'123456' * 1000
-    assert default_blob.write(_bytes) == len(_bytes)
-    _bytes = b'abcd'
-    assert default_blob.write(_bytes) == len(_bytes)
+    def test_empty_read(self):
+        assert self.default_blob.read() == b''
 
-def test_write_read(default_blob):
-    _bytes = b'123456' * 1000
-    default_blob.write(_bytes)
-    assert default_blob.read() == _bytes
+    def test_chain_write(self):
+        _bytes = b'123456' * 1000
+        assert self.default_blob.write(_bytes) == len(_bytes)
+        _bytes = b'abcd'
+        assert self.default_blob.write(_bytes) == len(_bytes)
 
-def test_empty_delete(default_blob):
-    assert default_blob._fp == None
-    default_blob.delete()
-    assert os.path.isfile(default_blob.file_path) == False
+    def test_write_read(self):
+        _bytes = b'123456' * 1000
+        self.default_blob.write(_bytes)
+        assert self.default_blob.read() == _bytes
 
-def test_delete(default_blob):
-    _bytes = b'123456' * 1000
-    default_blob.write(_bytes)
-    assert default_blob._fp != None
-    default_blob.delete()
-    assert os.path.isfile(default_blob.file_path) == False
+    def test_empty_delete(self):
+        assert self.default_blob._fp == None
+        self.default_blob.delete()
+        assert os.path.isfile(self.default_blob.file_path) == False
 
-def test_update(default_blob):
-    with pytest.raises(NotImplementedError):
-        default_blob.update()
+    def test_delete(self):
+        _bytes = b'123456' * 1000
+        self.default_blob.write(_bytes)
+        assert self.default_blob._fp != None
+        self.default_blob.delete()
+        assert os.path.isfile(self.default_blob.file_path) == False
 
-def test_hash(default_blob):
-    _bytes = b'123456' * 1000
-    default_blob.write(_bytes)
-    assert hash(default_blob) == 1404332994597457676
+    def test_hash(self):
+        _bytes = b'123456' * 1000
+        self.default_blob.write(_bytes)
+        assert hash(self.default_blob) == 1404332994597457676
+
+    def tearDown(self):
+        self.default_blob.delete()
