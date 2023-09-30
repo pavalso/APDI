@@ -1,0 +1,7 @@
+__pycache__
+storage
+
+.env
+blobs.db
+.vscode
+.pytest_cache
