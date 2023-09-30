@@ -58,7 +58,7 @@ class Blob(_FileBlob):
         DAO.update_blob(self.id_, self.owner, self.public)
 
     def insert(self) -> None:
-        if self._in_db:
+        if self.is_in_db:
             return
 
         DAO.new_blob(self.id_, self.owner, self.public)
@@ -66,5 +66,5 @@ class Blob(_FileBlob):
 
     def __str__(self) -> str: # pragma: no cover
         _public = 'Public' if self.public else 'Private'
-        _in_db = 'Yes' if self._in_db else 'No'
+        _in_db = 'Yes' if self.is_in_db else 'No'
         return f'{_public} Blob {self.id_} owner: {self.owner}, in database: {_in_db}'
