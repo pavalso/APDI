@@ -18,6 +18,8 @@ class Blob(_FileBlob):
         self.public = public
         self.allowedUsers = allowedUsers if allowedUsers else []
 
+        self._in_db = False
+
     @staticmethod
     def create(owner, public: bool = False, allowedUsers: list = None) -> 'Blob':
         _b = Blob(str(uuid.uuid4()), owner, public, allowedUsers)
@@ -33,6 +35,15 @@ class Blob(_FileBlob):
     def delete(self) -> None:
         super().delete()
         DAO.deleteBlob(self.id)
+        self._in_db = False
 
     def save(self) -> None:
         DAO.updateBlob(self.id, self.owner, self.public)
+
+    def _insert(self) -> None:
+        if self._in_db:
+            return
+
+        DAO.newBlob(self.id, self.owner, self.public)
+        self._in_db = True
+
