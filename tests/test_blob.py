@@ -22,3 +22,15 @@ def test_write_read(default_blob):
     default_blob.write(_bytes)
     assert default_blob.read() == _bytes
 
+def test_empty_delete(default_blob):
+    assert default_blob._fp == None
+    default_blob.delete()
+    assert os.path.isfile(default_blob.file_path) == False
+
+def test_delete(default_blob):
+    _bytes = b'123456' * 1000
+    default_blob.write(_bytes)
+    assert default_blob._fp != None
+    default_blob.delete()
+    assert os.path.isfile(default_blob.file_path) == False
+
