@@ -34,3 +34,7 @@ def test_delete(default_blob):
     default_blob.delete()
     assert os.path.isfile(default_blob.file_path) == False
 
+def test_update(default_blob):
+    with pytest.raises(NotImplementedError):
+        default_blob.update()
+
