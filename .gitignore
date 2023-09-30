@@ -2,6 +2,6 @@ __pycache__
 storage
 
 .env
-blobs.db
+*.db
 .vscode
 .pytest_cache
