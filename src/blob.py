@@ -19,6 +19,7 @@ class Blob(_FileBlob):
 
     def __init__(
             self, _id: str,
+            /,
             owner = None,
             public: bool = False,
             allowed_users: list = None,
