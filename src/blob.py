@@ -23,7 +23,19 @@ class Blob(_FileBlob):
     @staticmethod
     def create(owner, public: bool = False, allowedUsers: list = None) -> 'Blob':
         _b = Blob(str(uuid.uuid4()), owner, public, allowedUsers)
-        DAO.newBlob(_b.id, _b.owner, _b.public)
+        _b._insert()
+        return _b
+    
+    @staticmethod
+    def fetch(id: str) -> 'Blob':
+        _r = DAO.getBlob(id)
+
+        if _r is None:
+            raise exceptions.BlobNotFoundError(id)
+
+        _b = Blob(*_r)
+        _b._in_db = True
+
         return _b
 
     def read(self) -> bytes:
