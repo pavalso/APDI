@@ -3,10 +3,9 @@ import hashlib
 import io
 
 
-class Blob(abc.ABC):
+class _Blob(abc.ABC):
 
-    def __init__(self, id: str, stream: io.BytesIO = None) -> None:
-        self.id = id
+    def __init__(self, stream: io.BytesIO = None) -> None:
         self._fp = stream
 
     @abc.abstractmethod
@@ -22,10 +21,6 @@ class Blob(abc.ABC):
         return _r
 
     @abc.abstractmethod
-    def update(self) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
     def delete(self) -> None:
         if self._fp is None:
             return
@@ -33,3 +28,5 @@ class Blob(abc.ABC):
 
     def __hash__(self) -> int:
         return int(hashlib.sha256(self.read()).hexdigest(), 16)
+
+__export__ = (_Blob,)
