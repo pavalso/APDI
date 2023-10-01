@@ -92,16 +92,40 @@ class Blob:
 
         return _b
 
-    def delete(self) -> None:
+    @staticmethod
+    def update(
+        _id: str, owner: str = None, visibility: Visibility = None,
+        allowed_users: set[str] = None) -> 'Blob':
         """
-        Deletes the Blob object from the database.
-        """
-        super().delete()
-        DAO.delete_blob(self.id_)
-        self._in_db = False
+        Updates a Blob object in the database.
 
-    def update(self) -> None:
+        Args:
+            _id: The ID of the Blob to update.
+            owner: The new owner of the Blob.
+            visibility: The new visibility of the Blob.
+            allowed_users: The new list of users allowed to access the Blob.
+
+        Returns:
+            Blob: The updated Blob object.
         """
-        Updates the Blob object in the database.
+
+        _b = Blob.fetch(_id)
+
+        _b.perms.owner = owner or _b.perms.owner
+        _b.perms.visibility = visibility or _b.perms.visibility
+        _b.perms.allowed_users = allowed_users or _b.perms.allowed_users
+
+        DAO.update_blob(_id, _b.perms.owner, _b.perms.visibility.value)
+
+        return _b
+
+    @staticmethod
+    def delete(_id: str) -> None:
         """
-        DAO.update_blob(self.id_, self.owner, self.public)
+        Deletes a Blob object from the database.
+
+        Args:
+            _id: The ID of the Blob to delete.
+        """
+
+        DAO.delete_blob(_id)

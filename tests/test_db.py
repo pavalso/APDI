@@ -1,10 +1,10 @@
-import src.exceptions as exceptions
-
 import unittest
+
+import src.exceptions as exceptions
 
 from src.db.dao import DAO
 from src.entity import Blob
-from sqlite3 import IntegrityError, ProgrammingError
+from sqlite3 import ProgrammingError
 
 
 class TestDB(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestDB(unittest.TestCase):
     def setUp(self):
         DAO.connect(':memory:')
         self.default_blob = Blob('x', 'me')
-        self._raw_insert(self.default_blob.id_, self.default_blob.owner, self.default_blob.public)
+        self._raw_insert(self.default_blob.id_, self.default_blob.perms.owner, self.default_blob.perms.visibility.value)
 
     @staticmethod
     def _raw_select(id):
@@ -20,8 +20,8 @@ class TestDB(unittest.TestCase):
         return DAO._cursor.fetchone()
     
     @staticmethod
-    def _raw_insert(id, owner, public):
-        DAO._cursor.execute('INSERT INTO blobs VALUES (?, ?, ?)', (id, owner, public))
+    def _raw_insert(id, owner, visibility):
+        DAO._cursor.execute('INSERT INTO blobs VALUES (?, ?, ?)', (id, owner, visibility))
     
     @staticmethod
     def _exists_in_db(id):
@@ -29,9 +29,9 @@ class TestDB(unittest.TestCase):
         return bool(_r)
 
     def test_new_blob(self):
-        Blob.create('y', self.default_blob.owner)
+        Blob.create('y', self.default_blob.perms.owner)
         self.assertTrue(TestDB._exists_in_db('y'))
-        self.assertEqual(TestDB._raw_select(self.default_blob.id_)[1], self.default_blob.owner)
+        self.assertEqual(TestDB._raw_select(self.default_blob.id_)[1], self.default_blob.perms.owner)
 
     def test_fetch_blob(self):
         _fetched = Blob.fetch(self.default_blob.id_)
@@ -45,17 +45,20 @@ class TestDB(unittest.TestCase):
         self.assertRaises(AttributeError, setattr, _b, 'id_', '123456')
 
     def test_unique_id(self):
-        self.assertRaises(IntegrityError, TestDB._raw_insert, self.default_blob.id_, None, None)
+        self.assertRaises(exceptions.BlobAlreadyExistsError, Blob.create, self.default_blob.id_, None)
 
     def test_update_blob(self):
-        _old_owner = self.default_blob.owner
-        self.default_blob.owner = _old_owner + '_new'
-        self.default_blob.update()
-        self.assertNotEqual(Blob.fetch(self.default_blob.id_).owner, _old_owner)
+        _old_owner = self.default_blob.perms.owner
+        _new_owner = _old_owner + '_new'
+        Blob.update(self.default_blob.id_, owner=_new_owner)
+        self.assertNotEqual(Blob.fetch(self.default_blob.id_).perms.owner, _old_owner)
 
     def test_delete_blob(self):
-        self.default_blob.delete()
+        Blob.delete(self.default_blob.id_)
         self.assertFalse(TestDB._exists_in_db(self.default_blob.id_))
+
+    def test_delete_missing_blob(self):
+        self.assertRaises(exceptions.BlobNotFoundError, Blob.delete, 'not_existing')
 
     def test_close(self):
         DAO.close()
