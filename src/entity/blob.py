@@ -2,19 +2,21 @@
 This module contains the Blob class, which represents a Blob object 
 that can be stored in a database and synchronizes with a file in storage
 """
+from dataclasses import dataclass
 
 
 try:
-    import exceptions
     from db.dao import DAO
     from classes._file_blob import _FileBlob
+    from entity.perms import Perms, Visibility
 except ImportError:
-    from src import exceptions
     from src.db.dao import DAO
     from src.classes._file_blob import _FileBlob
+    from src.entity.perms import Perms, Visibility
 
 
-class Blob(_FileBlob):
+@dataclass
+class Blob:
     """
     Represents a Blob object that can be stored in a database.
 
@@ -26,19 +28,18 @@ class Blob(_FileBlob):
     """
 
     @property
-    def is_in_db(self) -> bool:
+    def id_(self) -> str:
         """
-        Returns whether the Blob is currently stored in the database.
+        Returns the ID of the Blob. (read_only)
         """
-        return self._in_db
+        return self.stream.id_
 
     def __init__(
-            self, _id: str,
-            /,
-            owner = None,
-            public: bool = False,
-            allowed_users: list = None,
-            in_db: bool = False) -> None:
+            self,
+            _id: str,
+            owner: str,
+            visibility: Visibility = Visibility.PRIVATE,
+            allowed_users: set[str] = None) -> None:
         """
         Initializes a new Blob object.
 
@@ -49,16 +50,13 @@ class Blob(_FileBlob):
             allowed_users: A list of users allowed to access the Blob.
             in_db: Whether the Blob is currently stored in the database.
         """
-        super().__init__(_id)
-
-        self.owner = owner
-        self.public = public
-        self.allowed_users = allowed_users
-
-        self._in_db = in_db
+        self.perms = Perms(owner, visibility, allowed_users)
+        self.stream = _FileBlob(_id)
 
     @staticmethod
-    def create(id_: str, owner, public: bool = False, allowed_users: list = None) -> 'Blob':
+    def create(
+        id_: str, owner: str, visibility: Visibility = Visibility.PRIVATE,
+        allowed_users: set[str] = None) -> 'Blob':
         """
         Creates a new Blob object and inserts it into the database.
 
@@ -70,8 +68,9 @@ class Blob(_FileBlob):
         Returns:
             Blob: The newly created Blob object.
         """
-        DAO.new_blob(id_, owner, public)
-        return Blob(id_, owner, public, allowed_users, True)
+        DAO.new_blob(id_, owner, visibility.value)
+
+        return Blob(id_, owner, visibility, allowed_users)
 
     @staticmethod
     def fetch(_id: str) -> 'Blob':
@@ -89,10 +88,7 @@ class Blob(_FileBlob):
         """
         _r = DAO.get_blob(_id)
 
-        if _r is None:
-            raise exceptions.BlobNotFoundError(id)
-
-        _b = Blob(*_r, in_db=True)
+        _b = Blob(*_r)
 
         return _b
 
