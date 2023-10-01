@@ -15,7 +15,7 @@ except ImportError:
 
 
 if __name__ == '__main__':
-    with db.connect('pyblob.db'):
+    with db.connect(':memory:'):
         blob = entities.Blob(1, 'me', objects.Visibility.PRIVATE)
 
         try:

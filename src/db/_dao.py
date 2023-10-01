@@ -5,6 +5,8 @@ for interacting with the SQLite database.
 
 import sqlite3
 
+from os import PathLike
+
 try:
     import exceptions
 except ImportError:
@@ -39,7 +41,7 @@ class _Dao:
         self._conn = None
         self._cursor = None
 
-    def connect(self, db_name) -> None:
+    def connect(self, db_name: PathLike) -> None:
         """
         Connects to the specified SQLite database.
 
@@ -139,7 +141,6 @@ class _Dao:
         Closes the connection to the database.
         """
         self._conn.close()
-
 
 _DAO = _Dao()
 
