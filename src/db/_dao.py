@@ -11,6 +11,20 @@ except ImportError:
     from src import exceptions
 
 
+class _Ctx:
+    """
+    A context manager for handling database connections.
+    """
+
+    def __init__(self, _dao: '_Dao') -> None:
+        self._dao = _dao
+
+    def __enter__(self):
+        return
+
+    def __exit__(self, *_):
+        self._dao.close()
+
 class _Dao:
     """
     This class represents a Data Access Object (DAO) for interacting with a SQLite database.
@@ -42,6 +56,8 @@ class _Dao:
             PRIMARY KEY (id))'''
 
         self._cursor.execute(_query)
+
+        return _Ctx(self)
 
     def new_blob(self, _id: str, owner: str, visibility: int = False) -> None:
         """
@@ -124,4 +140,7 @@ class _Dao:
         """
         self._conn.close()
 
-DAO = _Dao()
+
+_DAO = _Dao()
+
+__export__ = (_DAO,)

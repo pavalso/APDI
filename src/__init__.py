@@ -15,17 +15,14 @@ except ImportError:
 
 
 if __name__ == '__main__':
-    db.connect('pyblob.db')
+    with db.connect('pyblob.db'):
+        blob = entities.Blob(1, 'me', objects.Visibility.PRIVATE)
 
-    blob = entities.Blob(1, 'me', objects.Visibility.PRIVATE)
+        try:
+            entities.Blob.create(blob.id_, blob.perms.owner, blob.perms.visibility)
+        except exceptions.BlobAlreadyExistsError:
+            entities.Blob.update(blob.id_, owner=blob.perms.owner, visibility=blob.perms.visibility)
 
-    try:
-        entities.Blob.create(blob.id_, blob.perms.owner, blob.perms.visibility)
-    except exceptions.BlobAlreadyExistsError:
-        entities.Blob.update(blob.id_, owner=blob.perms.owner, visibility=blob.perms.visibility)
+        _blob = entities.Blob.fetch(1)
 
-    _blob = entities.Blob.fetch(1)
-
-    print(_blob.id_)
-
-    db.close()
+        print(_blob.id_)
