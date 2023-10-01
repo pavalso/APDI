@@ -33,7 +33,6 @@ class _Dao:
             db_name: The name of the database to connect to.
         """
         self._conn = sqlite3.connect(db_name)
-        self._conn.set_trace_callback(print)
         self._cursor = self._conn.cursor()
 
         _query = f'''CREATE TABLE IF NOT EXISTS {self.BLOBS} (
