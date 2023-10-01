@@ -6,13 +6,13 @@ from dataclasses import dataclass
 
 
 try:
-    from db.dao import DAO
-    from classes._file_blob import _FileBlob
-    from entity.perms import Perms, Visibility
+    from db import _DAO
+    from objects._file_blob import _FileBlob
+    from objects._perms import _Perms, Visibility
 except ImportError:
-    from src.db.dao import DAO
-    from src.classes._file_blob import _FileBlob
-    from src.entity.perms import Perms, Visibility
+    from src.db import _DAO
+    from src.objects._file_blob import _FileBlob
+    from src.objects._perms import _Perms, Visibility
 
 
 @dataclass
@@ -50,7 +50,7 @@ class Blob:
             allowed_users: A list of users allowed to access the Blob.
             in_db: Whether the Blob is currently stored in the database.
         """
-        self.perms = Perms(owner, visibility, allowed_users)
+        self.perms = _Perms(owner, visibility, allowed_users)
         self.stream = _FileBlob(_id)
 
     @staticmethod
@@ -68,7 +68,7 @@ class Blob:
         Returns:
             Blob: The newly created Blob object.
         """
-        DAO.new_blob(id_, owner, visibility.value)
+        _DAO.new_blob(id_, owner, visibility.value)
 
         return Blob(id_, owner, visibility, allowed_users)
 
@@ -86,7 +86,7 @@ class Blob:
         Raises:
             BlobNotFoundError: If the Blob with the given ID is not found in the database.
         """
-        _r = DAO.get_blob(_id)
+        _r = _DAO.get_blob(_id)
 
         _b = Blob(*_r)
 
@@ -115,7 +115,7 @@ class Blob:
         _b.perms.visibility = visibility or _b.perms.visibility
         _b.perms.allowed_users = allowed_users or _b.perms.allowed_users
 
-        DAO.update_blob(_id, _b.perms.owner, _b.perms.visibility.value)
+        _DAO.update_blob(_id, _b.perms.owner, _b.perms.visibility.value)
 
         return _b
 
@@ -128,4 +128,4 @@ class Blob:
             _id: The ID of the Blob to delete.
         """
 
-        DAO.delete_blob(_id)
+        _DAO.delete_blob(_id)

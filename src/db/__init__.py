@@ -2,6 +2,11 @@
 This module contains the database package for the APDI application.
 """
 
-from .dao import DAO
+from . import _dao
 
-__all__ = ['DAO']
+_DAO = _dao.DAO
+
+connect = _DAO.connect
+close = _DAO.close
+
+__all__ = ['_DAO', 'connect', 'close']

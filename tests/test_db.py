@@ -1,27 +1,27 @@
 import unittest
 
-import src.exceptions as exceptions
-
-from src.db.dao import DAO
-from src.entity import Blob
 from sqlite3 import ProgrammingError
+
+from src import exceptions
+from src.db import _DAO
+from src.entities import Blob
 
 
 class TestDB(unittest.TestCase):
 
     def setUp(self):
-        DAO.connect(':memory:')
+        _DAO.connect(':memory:')
         self.default_blob = Blob('x', 'me')
         self._raw_insert(self.default_blob.id_, self.default_blob.perms.owner, self.default_blob.perms.visibility.value)
 
     @staticmethod
     def _raw_select(id):
-        DAO._cursor.execute('SELECT * FROM blobs WHERE id=?', (id,))
-        return DAO._cursor.fetchone()
+        _DAO._cursor.execute('SELECT * FROM blobs WHERE id=?', (id,))
+        return _DAO._cursor.fetchone()
     
     @staticmethod
     def _raw_insert(id, owner, visibility):
-        DAO._cursor.execute('INSERT INTO blobs VALUES (?, ?, ?)', (id, owner, visibility))
+        _DAO._cursor.execute('INSERT INTO blobs VALUES (?, ?, ?)', (id, owner, visibility))
     
     @staticmethod
     def _exists_in_db(id):
@@ -61,8 +61,8 @@ class TestDB(unittest.TestCase):
         self.assertRaises(exceptions.BlobNotFoundError, Blob.delete, 'not_existing')
 
     def test_close(self):
-        DAO.close()
-        self.assertRaises(ProgrammingError, DAO.get_blob, 'x')
+        _DAO.close()
+        self.assertRaises(ProgrammingError, _DAO.get_blob, 'x')
 
     def tearDown(self):
-        DAO.close()
+        _DAO.close()

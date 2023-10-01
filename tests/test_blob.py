@@ -2,7 +2,7 @@ import pytest
 import unittest
 import os
 
-from src.classes._file_blob import _FileBlob
+from src.objects._file_blob import _FileBlob
 
 
 class TestBlob(unittest.TestCase):

@@ -16,9 +16,8 @@ class Visibility(IntFlag):
     def __str__(self) -> str:
         return self.name.lower()
 
-
 @dataclass
-class Perms:
+class _Perms:
     """
     A class representing the permissions of an entity.
     """
@@ -35,3 +34,5 @@ class Perms:
         self.owner = owner
         self.visibility = Visibility(visibility)
         self.allowed_users = allowed_users or set()
+
+__export__ = (_Perms,)

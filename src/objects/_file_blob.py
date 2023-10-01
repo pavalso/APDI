@@ -7,9 +7,9 @@ import os
 
 
 try:
-    from classes._blob import _Blob
+    from objects._blob import _Blob
 except ImportError:
-    from src.classes._blob import _Blob
+    from src.objects._blob import _Blob
 
 
 _SUFIX = 'blob'
