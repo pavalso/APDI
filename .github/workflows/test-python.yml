@@ -27,5 +27,5 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with coverage
       run: |
-        coverage run --source=src/db/ -m unittest discover tests/ && coverage report --fail-under=75
-        coverage run --source=src/ --omit="src/db/*" --omit=src/__init__.py -m unittest discover tests && coverage report --fail-under=80
+        coverage run --source="src/db/","src/entity" -m unittest discover tests/ && coverage report --fail-under=75
+        coverage run --source=src/ --omit="src/db/*","src/entity/*","src/__init__.py" -m unittest discover tests && coverage report --fail-under=80
