@@ -11,3 +11,13 @@ class BlobNotFoundError(Exception):
     """
     def __init__(self, _id: str) -> None:
         super().__init__(f'Blob with id {_id} not found')
+
+class BlobAlreadyExistsError(Exception):
+    """
+    Exception raised when a blob with a given ID already exists.
+
+    Args:
+        _id: The ID of the already existing blob.
+    """
+    def __init__(self, _id: str) -> None:
+        super().__init__(f'Blob with id {_id} already exists')

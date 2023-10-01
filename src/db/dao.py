@@ -5,6 +5,11 @@ for interacting with the SQLite database.
 
 import sqlite3
 
+try:
+    import exceptions
+except ImportError:
+    from src import exceptions
+
 
 class _Dao:
     """
@@ -33,11 +38,12 @@ class _Dao:
         _query = f'''CREATE TABLE IF NOT EXISTS {self.BLOBS} (
             id TEXT,
             owner TEXT,
-            public INTEGER,
+            visibility INTEGER,
             PRIMARY KEY (id))'''
+
         self._cursor.execute(_query)
 
-    def new_blob(self, _id: str, owner: str, public: bool = False) -> None:
+    def new_blob(self, _id: str, owner: str, visibility: int = False) -> None:
         """
         Inserts a new blob into the database.
 
@@ -46,10 +52,14 @@ class _Dao:
             owner: The owner of the blob.
             public: Whether the blob is public or not. Defaults to False.
         """
-        _query = f'''INSERT INTO {self.BLOBS} (id, owner, public)
+        _query = f'''INSERT INTO {self.BLOBS} (id, owner, visibility)
             VALUES (?, ?, ?)'''
-        self._cursor.execute(_query, (_id, owner, public))
-        self._conn.commit()
+
+        try:
+            self._cursor.execute(_query, (_id, owner, visibility))
+            self._conn.commit()
+        except sqlite3.IntegrityError:
+            raise exceptions.BlobAlreadyExistsError(_id) from sqlite3.IntegrityError
 
     def get_blob(self, _id: str) -> tuple:
         """
@@ -65,9 +75,15 @@ class _Dao:
             FROM {self.BLOBS}
             WHERE id=?'''
         self._cursor.execute(_query, (_id,))
-        return self._cursor.fetchone()
 
-    def update_blob(self, _id: str, owner: str, public: bool = False) -> None:
+        _r = self._cursor.fetchone()
+
+        if _r is None:
+            raise exceptions.BlobNotFoundError(_id)
+
+        return _r
+
+    def update_blob(self, _id: str, owner: str, visibility: int = False) -> None:
         """
         Updates a blob in the database.
 
@@ -77,9 +93,13 @@ class _Dao:
             public: Whether the blob is public or not. Defaults to False.
         """
         _query = f'''UPDATE {self.BLOBS}
-            SET owner=?, public=?
+            SET owner=?, visibility=?
             WHERE id=?'''
-        self._cursor.execute(_query, (owner, public, _id))
+        self._cursor.execute(_query, (owner, visibility, _id))
+
+        if self._cursor.rowcount == 0:
+            raise exceptions.BlobNotFoundError(_id)
+
         self._conn.commit()
 
     def delete_blob(self, _id: str) -> None:
@@ -92,6 +112,10 @@ class _Dao:
         _query = f'''DELETE FROM {self.BLOBS}
             WHERE id=?'''
         self._cursor.execute(_query, (_id,))
+
+        if self._cursor.rowcount == 0:
+            raise exceptions.BlobNotFoundError(_id)
+
         self._conn.commit()
 
     def close(self) -> None:
