@@ -129,3 +129,10 @@ class Blob:
         """
 
         _DAO.delete_blob(_id)
+
+    def __str__(self) -> str:
+        id_ = f'id={self.id_}'
+        owner_ = f'owner={self.perms.owner}'
+        visibility_ = f'visibility={self.perms.visibility}'
+        allowed_users_ = f'allowed_users={self.perms.allowed_users}'
+        return f'Blob({id_}, {owner_}, {visibility_}, {allowed_users_})'

@@ -25,4 +25,4 @@ if __name__ == '__main__':
 
         _blob = entities.Blob.fetch(1)
 
-        print(_blob.id_)
+        print(_blob)
