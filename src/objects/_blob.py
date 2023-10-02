@@ -3,12 +3,11 @@ This module defines the _Blob class,
 which is an abstract base class for binary large object (blob) storage.
 """
 
-import abc
 import hashlib
 import io
 
 
-class _Blob(abc.ABC):
+class _Blob:
     """
     Abstract base class for binary large object (blob) storage.
     """
@@ -22,7 +21,6 @@ class _Blob(abc.ABC):
         """
         self._fp = stream
 
-    @abc.abstractmethod
     def read(self, /) -> bytes:
         """
         Abstract method to read the blob data.
@@ -33,7 +31,6 @@ class _Blob(abc.ABC):
         self._fp.seek(0)
         return self._fp.read()
 
-    @abc.abstractmethod
     def write(self, __b: bytes) -> int:
         """
         Abstract method to write the blob data.
@@ -49,7 +46,6 @@ class _Blob(abc.ABC):
         self._fp.seek(0)
         return _r
 
-    @abc.abstractmethod
     def delete(self) -> None:
         """
         Abstract method to delete the blob data.

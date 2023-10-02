@@ -108,7 +108,6 @@ class Blob:
         Returns:
             Blob: The updated Blob object.
         """
-
         _b = Blob.fetch(_id)
 
         _b.perms.owner = owner or _b.perms.owner
@@ -127,7 +126,6 @@ class Blob:
         Args:
             _id: The ID of the Blob to delete.
         """
-
         _DAO.delete_blob(_id)
 
     def __str__(self) -> str:

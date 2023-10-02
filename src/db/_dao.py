@@ -31,7 +31,6 @@ class _Dao:
     """
     This class represents a Data Access Object (DAO) for interacting with a SQLite database.
     """
-
     BLOBS = 'blobs'
 
     def __init__(self) -> None:

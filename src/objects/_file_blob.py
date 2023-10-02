@@ -29,7 +29,6 @@ class _FileBlob(_Blob):
     A class representing a file blob, which is a type of binary large object (BLOB) 
     that stores data in a file.
     """
-
     _fp: io.FileIO = None
 
     @property
@@ -46,7 +45,6 @@ class _FileBlob(_Blob):
         Args:
             _id: The ID of the file blob.
         """
-
         super().__init__()
 
         self.__id = _id
@@ -58,7 +56,6 @@ class _FileBlob(_Blob):
         """
         Opens the file for reading and writing.
         """
-
         if self._fp is not None and not self._fp.closed:
             return
 
@@ -75,7 +72,6 @@ class _FileBlob(_Blob):
         Returns:
             bytes: The contents of the file.
         """
-
         if self._fp is None or self._fp.closed:
             return b''
         return super().read()
@@ -91,14 +87,12 @@ class _FileBlob(_Blob):
         Returns:
             int: The number of bytes written to the file.
         """
-
         return super().write(__b)
 
     def delete(self) -> None:
         """
         Deletes the file.
         """
-
         _r = super().delete()
         if os.path.isfile(self.file_path):
             os.remove(self.file_path)

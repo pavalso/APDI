@@ -9,6 +9,7 @@ class BlobNotFoundError(Exception):
     Args:
         _id: The ID of the missing blob.
     """
+
     def __init__(self, _id: str) -> None:
         super().__init__(f'Blob with id {_id} not found')
 
@@ -19,5 +20,6 @@ class BlobAlreadyExistsError(Exception):
     Args:
         _id: The ID of the already existing blob.
     """
+
     def __init__(self, _id: str) -> None:
         super().__init__(f'Blob with id {_id} already exists')
