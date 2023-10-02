@@ -24,6 +24,14 @@ class TestBlob(unittest.TestCase):
         self.default_blob.write(_bytes)
         assert self.default_blob.read() == _bytes
 
+    def test_chain_create_read(self):
+        _bytes = b'123456' * 1000
+        _blob = _FileBlob('123456')
+        _blob.write(_bytes)
+        assert _blob.read() == _bytes
+        _blob2 = _FileBlob('123456')
+        assert _blob2.read() == _blob.read()
+
     def test_empty_delete(self):
         assert self.default_blob._fp == None
         self.default_blob.delete()
