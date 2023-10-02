@@ -15,8 +15,7 @@ except ImportError:
     from src.objects._perms import _Perms, Visibility
 
 
-@dataclass
-class Blob:
+class Blob(_FileBlob):
     """
     Represents a Blob object that can be stored in a database.
 
@@ -26,13 +25,6 @@ class Blob:
         allowed_users: A list of users allowed to access the Blob.
         is_in_db: Whether the Blob is currently stored in the database.
     """
-
-    @property
-    def id_(self) -> str:
-        """
-        Returns the ID of the Blob. (read_only)
-        """
-        return self.stream.id_
 
     def __init__(
             self,
@@ -50,8 +42,9 @@ class Blob:
             allowed_users: A list of users allowed to access the Blob.
             in_db: Whether the Blob is currently stored in the database.
         """
+        super().__init__(_id)
+
         self.perms = _Perms(owner, visibility, allowed_users)
-        self.stream = _FileBlob(_id)
 
     @staticmethod
     def create(
@@ -67,6 +60,9 @@ class Blob:
 
         Returns:
             Blob: The newly created Blob object.
+
+        Raises:
+            BlobAlreadyExistsError: If a Blob with the given ID already exists in the database.
         """
         _DAO.new_blob(id_, owner, visibility.value)
 
@@ -107,6 +103,9 @@ class Blob:
 
         Returns:
             Blob: The updated Blob object.
+
+        Raises:
+            BlobNotFoundError: If the Blob with the given ID is not found in the database.
         """
         _b = Blob.fetch(_id)
 
@@ -125,6 +124,9 @@ class Blob:
 
         Args:
             _id: The ID of the Blob to delete.
+
+        Raises:
+            BlobNotFoundError: If the Blob with the given ID is not found in the database.
         """
         _DAO.delete_blob(_id)
 

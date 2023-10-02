@@ -68,6 +68,9 @@ class _Dao:
             _id: The ID of the blob.
             owner: The owner of the blob.
             public: Whether the blob is public or not. Defaults to False.
+        
+        Raises:
+            BlobAlreadyExistsError: If a blob with the specified ID already exists.
         """
         _query = f'''INSERT INTO {self.BLOBS} (id, owner, visibility)
             VALUES (?, ?, ?)'''
@@ -87,6 +90,9 @@ class _Dao:
 
         Returns:
             tuple: A tuple representing the blob.
+
+        Raises:
+            BlobNotFoundError: If the blob with the specified ID is not found.
         """
         _query = f'''SELECT *
             FROM {self.BLOBS}
@@ -108,6 +114,9 @@ class _Dao:
             _id: The ID of the blob to update.
             owner: The new owner of the blob.
             public: Whether the blob is public or not. Defaults to False.
+
+        Raises:
+            BlobNotFoundError: If the blob with the specified ID is not found.
         """
         _query = f'''UPDATE {self.BLOBS}
             SET owner=?, visibility=?
@@ -125,6 +134,9 @@ class _Dao:
 
         Args:
             _id: The ID of the blob to delete.
+        
+        Raises:
+            BlobNotFoundError: If the blob with the specified ID is not found.
         """
         _query = f'''DELETE FROM {self.BLOBS}
             WHERE id=?'''

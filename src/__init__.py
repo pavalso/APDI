@@ -13,16 +13,4 @@ except ImportError:
     from src import entities
     from src import db
 
-
-if __name__ == '__main__':
-    with db.connect(':memory:'):
-        blob = entities.Blob(1, 'me', objects.Visibility.PRIVATE)
-
-        try:
-            entities.Blob.create(blob.id_, blob.perms.owner, blob.perms.visibility)
-        except exceptions.BlobAlreadyExistsError:
-            entities.Blob.update(blob.id_, owner=blob.perms.owner, visibility=blob.perms.visibility)
-
-        _blob = entities.Blob.fetch(1)
-
-        print(_blob)
+__all__ = ['exceptions', 'objects', 'entities', 'db']
