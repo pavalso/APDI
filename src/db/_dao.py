@@ -41,7 +41,7 @@ class _Dao:
         self._conn = None
         self._cursor = None
 
-    def connect(self, db_name: PathLike) -> None:
+    def connect(self, db_name: PathLike) -> _Ctx:
         """
         Connects to the specified SQLite database.
 
