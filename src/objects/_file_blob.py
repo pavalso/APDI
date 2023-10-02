@@ -53,7 +53,7 @@ class _FileBlob(_Blob):
         try:
             with open(self.file_path, 'rb') as self._fp:
                 return super().read()
-        except OSError:
+        except FileNotFoundError:
             return b''
 
     def write(self, __b: bytes) -> int:
@@ -66,6 +66,9 @@ class _FileBlob(_Blob):
         Returns:
             int: The number of bytes written to the file.
         """
+        if not os.path.isdir(_BLOBS_DIR):
+            os.makedirs(_BLOBS_DIR, exist_ok=True)
+
         with open(self.file_path, 'wb') as self._fp:
             return super().write(__b)
 
