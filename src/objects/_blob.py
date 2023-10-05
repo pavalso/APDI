@@ -41,7 +41,6 @@ class _Blob:
         Returns:
             int: The number of bytes written.
         """
-        self._fp.truncate(0)
         _r = self._fp.write(__b)
         self._fp.seek(0)
         return _r
