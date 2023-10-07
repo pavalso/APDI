@@ -4,6 +4,7 @@ from src.db import connect
 from src.entities import Blob
 from src.objects import _FileBlob
 
+
 if __name__ == '__main__':
 #    connect('pyapdi.db')
 #

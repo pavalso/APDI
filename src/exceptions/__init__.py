@@ -23,3 +23,48 @@ class BlobAlreadyExistsError(Exception):
 
     def __init__(self, _id: str) -> None:
         super().__init__(f'Blob with id {_id} already exists')
+
+class UserAlreadyExistsError(Exception):
+    """
+    Exception raised when a user with a given username already exists.
+
+    Args:
+        username: The username of the already existing user.
+    """
+
+    def __init__(self, username: str) -> None:
+        super().__init__(f'User with username {username} already exists')
+
+class UserNotFoundError(Exception):
+    """
+    Exception raised when a user with a given username is not found.
+
+    Args:
+        username: The username of the missing user.
+    """
+
+    def __init__(self, username: str) -> None:
+        super().__init__(f'User with username {username} not found')
+
+class InvalidTokenError(Exception):
+    """
+    Exception raised when a token is invalid.
+
+    Args:
+        token: The invalid token.
+    """
+
+    def __init__(self, token: str) -> None:
+        super().__init__(f'Token {token} is invalid')
+
+class InsufficientPermissionsError(Exception):
+    """
+    Exception raised when a user does not have sufficient permissions.
+
+    Args:
+        username: The username of the user.
+        blob_id: The ID of the blob.
+    """
+
+    def __init__(self, username: str, blob_id: str) -> None:
+        super().__init__(f'User {username} does not have sufficient permissions to access blob {blob_id}')

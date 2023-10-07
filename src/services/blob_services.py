@@ -5,107 +5,112 @@ creating, updating, deleting, and retrieving Blob objects from a database.
 
 from uuid import uuid4
 
-from src.entities import Blob
+from src.entities import Blob, User
 from src.objects import Visibility
 from src import exceptions
 
 
 def create_blob(
-        owner: str,
+        user_token: str,
         visibility: Visibility = Visibility.PRIVATE,
         allowed_users: set[str] = None) -> Blob | None:
     """
     Creates a new Blob object and inserts it into the database.
 
     Args:
-        owner: The owner of the Blob.
-        public: Whether the Blob is public or not.
+        user_token: The token of the user creating the blob.
+        visibility: Visibility of the blob.
         allowed_users: A list of users allowed to access the Blob.
 
     Returns:
         Blob: The created Blob object or None if the Blob already exists.
     """
-    _uuid = str(uuid4())
+    if (user := User.token_owner(user_token)) is None:
+        raise exceptions.InvalidTokenError(user_token)
 
-    try:
-        blob = Blob.create(_uuid, owner, visibility, allowed_users)
-    except exceptions.BlobAlreadyExistsError:
-        return None
-
-    return blob
+    return Blob.create(str(uuid4()), user, visibility, allowed_users)
 
 def update_blob(
-        id_: str,
-        owner: str = None,
+        blob_id: str,
+        user_token: str,
         visibility: Visibility = None,
         allowed_users: set[str] = None) -> Blob | None:
     """
     Updates a Blob object in the database.
 
     Args:
-        id_: The ID of the Blob.
-        owner: The owner of the Blob.
-        public: Whether the Blob is public or not.
+        blob_id: The ID of the Blob.
+        user_token: The token of the Blob owner.
+        visibility: New visibility of the blob.
         allowed_users: A list of users allowed to access the Blob.
 
     Returns:
         Blob: The updated Blob object or None if the Blob was not found.
     """
-    try:
-        blob = Blob.update(id_, owner, visibility, allowed_users)
-    except exceptions.BlobNotFoundError:
-        return None
+    if (user := User.token_owner(user_token)) is None:
+        raise exceptions.InvalidTokenError(user_token)
 
-    return blob
+    if not Blob.fetch(blob_id).perms.owner == user:
+        raise exceptions.InsufficientPermissionsError(user, blob_id)
 
-def delete_blob(id_: str) -> bool:
+    return Blob.update(blob_id, user, visibility, allowed_users)
+
+def delete_blob(blob_id: str, user_token: str) -> None:
     """
     Deletes a Blob object from the database.
 
     Args:
-        id_: The ID of the Blob.
-
-    Returns:
-        bool: True if the Blob was deleted, False if the Blob was not found.
+        blob_id: The ID of the Blob.
+        user_token: The token of the Blob owner.
     """
-    try:
-        Blob.delete(id_)
-    except exceptions.BlobNotFoundError:
-        return False
+    if (user := User.token_owner(user_token)) is None:
+        raise exceptions.InvalidTokenError(user_token)
 
-    return True
+    if not Blob.fetch(blob_id).perms.owner == user:
+        raise exceptions.InsufficientPermissionsError(user, blob_id)
 
-def get_hash_blob(id_: str) -> int | None:
+    Blob.delete(blob_id)
+
+def get_hash_blob(blob_id: str, user_token: str) -> int | None:
     """
     Gets the hash of a Blob object from the database.
 
     Args:
-        id_: The ID of the Blob.
+        blob_id: The ID of the Blob.
 
     Returns:
         int: The hash of the Blob or None if the Blob was not found.
     """
-    try:
-        blob = Blob.fetch(id_)
-    except exceptions.BlobNotFoundError:
-        return None
+    if (user := User.token_owner(user_token)) is None:
+        raise exceptions.InvalidTokenError(user_token)
 
-    return hash(blob)
+    _perms = Blob.fetch(blob_id).perms
 
-def get_blob(id_: str) -> Blob | None:
+    if not _perms.owner == user or user not in _perms.allowed_users:
+        raise exceptions.InsufficientPermissionsError(user, blob_id)
+
+    return hash(Blob.fetch(blob_id))
+
+def get_blob(blob_id: str, user_token: str) -> Blob | None:
     """
     Gets a Blob object from the database.
 
     Args:
-        id_: The ID of the Blob.
+        blob_id: The ID of the Blob.
 
     Returns:
         Blob: The Blob object or None if the Blob was not found.
     """
-    try:
-        blob = Blob.fetch(id_)
-    except exceptions.BlobNotFoundError:
-        return None
+    blob = Blob.fetch(blob_id)
+
+    if blob.perms.visibility == Visibility.PUBLIC:
+        return blob
+
+    if (user := User.token_owner(user_token)) is None:
+        raise exceptions.InvalidTokenError(user_token)
+
+    if not blob.perms.owner == user or user not in blob.perms.allowed_users:
+        raise exceptions.InsufficientPermissionsError(user, blob_id)
 
     return blob
 

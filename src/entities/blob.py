@@ -2,8 +2,6 @@
 This module contains the Blob class, which represents a Blob object 
 that can be stored in a database and synchronizes with a file in storage
 """
-from dataclasses import dataclass
-
 
 try:
     from db import _DAO
@@ -136,3 +134,15 @@ class Blob(_FileBlob):
         visibility_ = f'visibility={self.perms.visibility}'
         allowed_users_ = f'allowed_users={self.perms.allowed_users}'
         return f'Blob({id_}, {owner_}, {visibility_}, {allowed_users_})'
+
+    def user_perms(self, user: str) -> bool:
+        """
+        Checks whether a user has permissions to access the Blob.
+
+        Args:
+            user: The user to check.
+
+        Returns:
+            bool: True if the user has permissions to access the Blob, False otherwise.
+        """
+        return self.perms.owner == user or user in self.perms.allowed_users
