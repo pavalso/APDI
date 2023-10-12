@@ -2,9 +2,6 @@
 This module contains functions for 
 creating, updating, deleting, and retrieving Blob objects from a database.
 """
-
-from uuid import uuid4
-
 from src.entities import Blob
 from src.objects import Visibility
 from src import exceptions
@@ -25,10 +22,8 @@ def create_blob(
     Returns:
         Blob: The created Blob object or None if the Blob already exists.
     """
-    _uuid = str(uuid4())
-
     try:
-        blob = Blob.create(_uuid, owner, visibility, allowed_users)
+        blob = Blob.create(owner, visibility, allowed_users)
     except exceptions.BlobAlreadyExistsError:
         return None
 

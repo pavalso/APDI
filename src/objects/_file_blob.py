@@ -81,4 +81,10 @@ class _FileBlob(_Blob):
             os.remove(self.file_path)
         return _r
 
+    def __eq__(self, __value: object) -> bool:
+        return issubclass(type(__value), self.__class__) and self.id_ == __value.id_
+
+    def __hash__(self) -> int:
+        return super().__hash__()
+
 __export__ = (_FileBlob,)
