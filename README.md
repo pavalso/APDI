@@ -19,7 +19,25 @@ Obtiene el contenido de un blob específico por su UUID.
     - Ejemplo de respuesta (éxito):
     ```json
     {
-        "data": "blob-binary-data"
+        "raw": "blob-binary-data"
+    }
+    ```
+
+#### Obtener todos los Blobs del usuario
+Obtiene el UUID de todos los blobs del usuario.
+
+- **Ruta:** `/blobs/` (GET)
+- **Descripción:** Obtiene el UUID de todos los blobs del usuario.
+- **Respuestas:**
+  - **Código 200 (Éxito):** El usuario está autenticado y se han podido obtener sus blobs.
+  - **Código 404 (No encontrado):** El usuario no está autenticado
+    - Ejemplo de respuesta (éxito):
+    ```json
+    {
+        "blobs": [
+          "UUID1",
+          "UUID2"
+        ]
     }
     ```
 
@@ -29,8 +47,12 @@ Sube un blob al servidor y almacénalo con un UUID único.
 - **Ruta:** `/blobs` (POST)
 - **Descripción:** Sube un blob al servidor y almacena el contenido con un UUID único.
 - **Parámetros de solicitud:**
-- - `visiblity (JSON)`: Visibilidad del blob, por defecto: Private
-  - `raw (JSON):` Datos binarios del blob.
+  ```json
+  {
+      "visibility": "Visibilidad del blob"
+      "raw": "Datos binarios del blob"
+  }
+  ```
 - **Respuestas:**
   - **Código 201 (Creado):** El blob se subió con éxito.
     - Ejemplo de respuesta:
@@ -48,8 +70,12 @@ Actualiza el contenido de un blob existente utilizando su UUID.
 - **Descripción:** Actualiza el contenido de un blob existente utilizando su UUID.
 - **Parámetros de solicitud:**
   - `blob (URL Parameter):` El UUID del blob que se desea actualizar.
-  - `visibility (JSON)`: Nueva visibilidad del blob
-  - `raw (JSON):` Nuevos datos binarios del blob.
+  ```json
+  {
+      "visibility": Nueva visibilidad del blob
+      "raw": "Nuevos datos binarios del blob"
+  }
+  ```
 - **Respuestas:**
   - **Código 200 (Éxito):** El blob se actualizó con éxito.
   - **Código 404 (No encontrado):** El blob con el UUID especificado no se encontró.
