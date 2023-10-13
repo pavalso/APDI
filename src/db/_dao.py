@@ -7,10 +7,7 @@ import sqlite3
 
 from os import PathLike
 
-try:
-    import exceptions
-except ImportError:
-    from src import exceptions
+from src import exceptions
 
 
 class _Ctx:

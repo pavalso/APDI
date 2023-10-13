@@ -9,16 +9,15 @@ from src import exceptions
 
 def create_blob(
         user_token: str,
-        visibility: Visibility = Visibility.PRIVATE,
-        raw: bytes = None) -> Blob:
+        raw: bytes,
+        visibility: Visibility = Visibility.PRIVATE) -> Blob:
     """
     Creates a new Blob object and inserts it into the database.
 
     Args:
         user_token: The token of the user creating the blob.
-        visibility: Visibility of the blob.
         raw: The data to write to the Blob.
-        allowed_users: A list of users allowed to access the Blob.
+        visibility: Visibility of the blob.
 
     Returns:
         Blob: The created Blob object or None if the Blob already exists.

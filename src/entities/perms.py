@@ -2,10 +2,7 @@
 This module contains the Perms class which provides methods for managing permissions.
 """
 
-try:
-    from db._dao import _DAO
-except ImportError:
-    from src.db._dao import _DAO
+from src.db._dao import _DAO
 
 
 class Perms:

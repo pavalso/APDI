@@ -5,11 +5,7 @@ This module contains the _FileBlob class, which represents a file blob that stor
 import io
 import os
 
-
-try:
-    from objects._blob import _Blob
-except ImportError:
-    from src.objects._blob import _Blob
+from ._blob import _Blob
 
 
 _SUFIX = 'blob'
@@ -76,10 +72,9 @@ class _FileBlob(_Blob):
         """
         Deletes the file.
         """
-        _r = super().delete()
+        super().delete()
         if os.path.isfile(self.file_path):
             os.remove(self.file_path)
-        return _r
 
     def __eq__(self, __value: object) -> bool:
         return issubclass(type(__value), self.__class__) and self.id_ == __value.id_

@@ -4,12 +4,8 @@ This module contains the Client class and its dependencies.
 
 from adiauthcli import client
 
-try:
-    from entities.blob import Blob, _DBBlob
-    from objects._perms import Visibility
-except ImportError:
-    from src.entities.blob import Blob, _DBBlob
-    from src.objects._perms import Visibility
+from src.entities.blob import Blob, _DBBlob
+from src.objects._perms import Visibility
 
 
 class _LoggedClient(client.Client):

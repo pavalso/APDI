@@ -4,16 +4,10 @@ that can be stored in a database and synchronizes with a file in storage
 """
 from uuid import uuid4
 
-try:
-    from db import _DAO
-    from objects._file_blob import _FileBlob
-    from objects._perms import _Perms, Visibility
-    from entities.perms import Perms
-except ImportError:
-    from src.db import _DAO
-    from src.objects._file_blob import _FileBlob
-    from src.objects._perms import _Perms, Visibility
-    from src.entities.perms import Perms
+from src.db import _DAO
+from src.objects._file_blob import _FileBlob
+from src.objects._perms import _Perms, Visibility
+from src.entities.perms import Perms
 
 
 class _DBBlob(_FileBlob):
