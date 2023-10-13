@@ -42,15 +42,14 @@ Obtiene el UUID de todos los blobs del usuario.
     ```
 
 #### Subir un Blob
-Sube un blob al servidor y almacénalo con un UUID único.
+Crea un blob en el servidor y le asigna un UUID único.
 
 - **Ruta:** `/blobs` (POST)
-- **Descripción:** Sube un blob al servidor y almacena el contenido con un UUID único.
+- **Descripción:** Crea un blob en el servidor y le asigna un UUID único.
 - **Parámetros de solicitud:**
   ```json
   {
       "visibility": "Visibilidad del blob"
-      "raw": "Datos binarios del blob"
   }
   ```
 - **Respuestas:**
@@ -70,12 +69,7 @@ Actualiza el contenido de un blob existente utilizando su UUID.
 - **Descripción:** Actualiza el contenido de un blob existente utilizando su UUID.
 - **Parámetros de solicitud:**
   - `blob (URL Parameter):` El UUID del blob que se desea actualizar.
-  ```json
-  {
-      "visibility": Nueva visibilidad del blob
-      "raw": "Nuevos datos binarios del blob"
-  }
-  ```
+  - `raw (binary stream):` El nuevo contenido del blob
 - **Respuestas:**
   - **Código 200 (Éxito):** El blob se actualizó con éxito.
   - **Código 404 (No encontrado):** El blob con el UUID especificado no se encontró.
