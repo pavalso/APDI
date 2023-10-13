@@ -58,24 +58,6 @@ class Client:
     """
 
     @staticmethod
-    def login(username: str, password: str) -> _LoggedClient:
-        """
-        Logs in a user.
-
-        Args:
-            username: A string representing the username of the client.
-            password: A string representing the password of the client.
-
-        Returns:
-            A _LoggedClient object representing the logged in client.
-        """
-        _c = _LoggedClient()
-
-        _c.login(username, password)
-
-        return _c
-
-    @staticmethod
     def fetch_user(token: str) -> _LoggedClient:
         """
         Fetches a user.

@@ -24,28 +24,6 @@ class BlobAlreadyExistsError(Exception):
     def __init__(self, _id: str) -> None:
         super().__init__(f'Blob with id {_id} already exists')
 
-class UserAlreadyExistsError(Exception):
-    """
-    Exception raised when a user with a given username already exists.
-
-    Args:
-        username: The username of the already existing user.
-    """
-
-    def __init__(self, username: str) -> None:
-        super().__init__(f'User with username {username} already exists')
-
-class UserNotFoundError(Exception):
-    """
-    Exception raised when a user with a given username is not found.
-
-    Args:
-        username: The username of the missing user.
-    """
-
-    def __init__(self, username: str) -> None:
-        super().__init__(f'User with username {username} not found')
-
 class InvalidTokenError(Exception):
     """
     Exception raised when a token is invalid.
