@@ -3,6 +3,6 @@ This module defines the entities used in the application.
 """
 
 from .blob import Blob
-from src.entities.user import User
+from .client import Client
 
-__all__ = ['Blob', 'User']
+__all__ = ['Blob', 'Client']

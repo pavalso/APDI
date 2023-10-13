@@ -67,4 +67,29 @@ class InsufficientPermissionsError(Exception):
     """
 
     def __init__(self, username: str, blob_id: str) -> None:
-        super().__init__(f'User {username} does not have sufficient permissions to access blob {blob_id}')
+        super().__init__(
+            f'User {username} does not have sufficient permissions to access blob {blob_id}')
+
+class UserHavePermissionsError(Exception):
+    """
+    Exception raised when a user already has permissions for a blob.
+
+    Args:
+        blob: The blob the user already has permissions for.
+        user: The user that already has permissions for the blob.
+    """
+
+    def __init__(self, blob: str, user: str) -> None:
+        super().__init__(f'User {user} already has permissions for blob {blob}')
+
+class UserHaveNoPermissionsError(Exception):
+    """
+    Exception raised when a user does not have permissions for a blob.
+
+    Args:
+        blob: The blob the user does not have permissions for.
+        user: The user that does not have permissions for the blob.
+    """
+
+    def __init__(self, blob: str, user: str) -> None:
+        super().__init__(f'User {user} does not have permissions for blob {blob}')
