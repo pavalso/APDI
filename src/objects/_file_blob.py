@@ -14,7 +14,6 @@ class _FileBlob(io.FileIO):
     that stores data in a file.
     """
     _fp: io.FileIO = None
-    _dir: str = os.getenv("STORAGE", "storage")
 
     @property
     def id_(self) -> str:
@@ -31,6 +30,8 @@ class _FileBlob(io.FileIO):
             _id: The ID of the file blob.
         """
         self.__id = _id
+
+        self._dir = os.getenv("STORAGE", "storage")
 
         self.file_name = f'{_id}.{_SUFIX}'
         self.file_path = os.path.join(self._dir, self.file_name)

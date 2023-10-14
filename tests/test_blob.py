@@ -1,15 +1,25 @@
 import unittest
 import os
+import shutil
 
 from src.objects._file_blob import _FileBlob
 
 
+
+@staticmethod
+def _remove_test_dir():
+    _st = os.getenv('STORAGE')
+    if _st and os.path.isdir(_st):
+        shutil.rmtree(_st)
+
 class TestBlob(unittest.TestCase):
 
     def setUp(self):
+        os.environ['STORAGE'] = '.tests_storage'
         self.default_blob = _FileBlob('123456')
 
     def test_empty_read(self):
+        self.default_blob = _FileBlob('123456')
         assert self.default_blob.read() == b''
 
     def test_chain_write(self):
@@ -48,3 +58,4 @@ class TestBlob(unittest.TestCase):
 
     def tearDown(self):
         self.default_blob.delete()
+        _remove_test_dir()

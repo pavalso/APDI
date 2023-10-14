@@ -1,3 +1,5 @@
+import os
+import shutil
 import unittest
 
 from sqlite3 import ProgrammingError, IntegrityError
@@ -21,9 +23,16 @@ def _exists_in_db_blob(id):
     _r = _raw_select_blob(id)
     return bool(_r)
 
+@staticmethod
+def _remove_test_dir():
+    _st = os.getenv('STORAGE')
+    if _st and os.path.isdir(_st):
+        shutil.rmtree(_st)
+
 class TestDB(unittest.TestCase):
 
     def setUp(self):
+        os.environ['STORAGE'] = '.tests_storage'
         _DAO.connect(':memory:')
         self.default_id = '123456'
         self.default_owner = 'me'
@@ -71,11 +80,13 @@ class TestDB(unittest.TestCase):
         self.assertRaises(ProgrammingError, _DAO.get_blob, 'x')
 
     def tearDown(self):
+        _remove_test_dir()
         _DAO.close()
 
 class TestPerms(unittest.TestCase):
 
     def setUp(self):
+        os.environ['STORAGE'] = '.tests_storage'
         _DAO.connect(':memory:')
         self.default_owner = 'me'
 
@@ -96,4 +107,5 @@ class TestPerms(unittest.TestCase):
             self.assertIsNone(_DAO.get_user_perms(_blob.id_, 'user'))
 
     def tearDown(self):
+        _remove_test_dir()
         _DAO.close()
