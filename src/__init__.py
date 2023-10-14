@@ -37,7 +37,7 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
     def get_blob(blob: str) -> flask.Response:
         blob_ = services.get_blob(blob, flask.request.user_token)
 
-        return flask.send_file(blob_.stream, mimetype="application/octet-stream")
+        return flask.send_file(blob_, mimetype="application/octet-stream")
 
     @app.route(f"{endpoint}/blobs/", methods=["GET"])
     def get_blobs() -> flask.Response:

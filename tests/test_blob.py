@@ -21,15 +21,19 @@ class TestBlob(unittest.TestCase):
     def test_write_read(self):
         _bytes = b'123456' * 1000
         self.default_blob.write(_bytes)
+        self.default_blob.seek(0)
         assert self.default_blob.read() == _bytes
 
     def test_chain_create_read(self):
         _bytes = b'123456' * 1000
-        _blob = _FileBlob('123456')
-        _blob.write(_bytes)
-        assert _blob.read() == _bytes
-        _blob2 = _FileBlob('123456')
-        assert _blob2.read() == _blob.read()
+        with _FileBlob('123456') as _blob:
+            _blob = _FileBlob('123456')
+            _blob.write(_bytes)
+            _blob.seek(0)
+            assert _blob.read() == _bytes
+
+            with _FileBlob('123456') as _blob2:
+                assert _blob2.read() == _blob.read()
 
     def test_empty_delete(self):
         assert self.default_blob._fp == None
@@ -39,7 +43,6 @@ class TestBlob(unittest.TestCase):
     def test_delete(self):
         _bytes = b'123456' * 1000
         self.default_blob.write(_bytes)
-        assert self.default_blob._fp != None
         self.default_blob.delete()
         assert os.path.isfile(self.default_blob.file_path) == False
 

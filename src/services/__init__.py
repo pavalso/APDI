@@ -10,6 +10,8 @@ from src.objects import Visibility
 from src import exceptions
 
 
+_BUFF_SIZE = 1024 * 1024
+
 def create_blob(
         user_token: str,
         visibility: Visibility = Visibility.PRIVATE) -> Blob:
@@ -61,7 +63,12 @@ def update_blob(
     if blob is None:
         raise exceptions.BlobNotFoundError(blob_id)
 
-    blob.write(raw)
+    blob.truncate(0)
+
+    while (chunk := raw.read(_BUFF_SIZE)) != b'':
+        blob.write(chunk)
+
+    blob.seek(0)
 
     return blob
 
@@ -105,8 +112,8 @@ def get_hash_blob(blob_id: str, user_token: str) -> tuple[str, str]:
     """
     blob = get_blob(blob_id, user_token)
 
-    _md5 = hashlib.file_digest(blob.stream, 'md5').hexdigest()
-    _sha256 = hashlib.file_digest(blob.stream, 'sha256').hexdigest()
+    _md5 = hashlib.file_digest(blob, 'md5', _bufsize = _BUFF_SIZE).hexdigest()
+    _sha256 = hashlib.file_digest(blob, 'sha256', _bufsize = _BUFF_SIZE).hexdigest()
 
     return _md5, _sha256
 
@@ -126,6 +133,8 @@ def get_blob(blob_id: str, user_token: str) -> Blob:
         UserNotExists: If the user token is invalid.
     """
     blob = Blob.fetch(blob_id)
+
+    blob.seek(0)
 
     if blob.perms.visibility == Visibility.PUBLIC:
         return blob
