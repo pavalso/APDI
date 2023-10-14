@@ -19,6 +19,10 @@ class _FileBlob(_Blob):
     _dir: str = os.getenv("STORAGE", "storage")
 
     @property
+    def stream(self) -> io.FileIO:
+        return io.BytesIO() if not os.path.exists(self.file_path) else open(self.file_path, 'rb')
+
+    @property
     def id_(self) -> str:
         """
         Returns the ID of the file blob (read_only).
@@ -78,8 +82,5 @@ class _FileBlob(_Blob):
 
     def __eq__(self, __value: object) -> bool:
         return issubclass(type(__value), self.__class__) and self.id_ == __value.id_
-
-    def __hash__(self) -> int:
-        return super().__hash__()
 
 __export__ = (_FileBlob,)

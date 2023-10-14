@@ -37,14 +37,15 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
     def get_blob(blob: str) -> flask.Response:
         blob_ = services.get_blob(blob, flask.request.user_token)
 
-        return blob_.read()
+        return flask.send_file(blob_.stream, mimetype="application/octet-stream")
 
     @app.route(f"{endpoint}/blobs/", methods=["GET"])
     def get_blobs() -> flask.Response:
         blobs = services.get_user_blobs(flask.request.user_token)
 
         return {
-            "blobs": blobs
+            "blobs": blobs,
+            "message": f"Retrieved {len(blobs)} blobs successfully"
         }
 
     @app.route(f"{endpoint}/blobs/", methods=["POST"])
@@ -55,18 +56,17 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
         return {
             "id": blob_.id_,
-            "message": "Blob created"
+            "message": "Blob created successfully"
         }
 
     @app.route(f"{endpoint}/blobs/<blob>", methods=["PUT"])
     def put_blob(blob: str) -> flask.Response:
-        stream = flask.request.data
+        stream = flask.request.stream
 
-        blob_ = services.update_blob(blob, flask.request.user_token, stream)
+        services.update_blob(blob, flask.request.user_token, stream)
 
         return {
-            "id": blob_.id_,
-            "message": "Blob updated"
+            "message": f"Blob {blob} updated successfully"
         }
 
     @app.route(f"{endpoint}/blobs/<blob>", methods=["DELETE"])
@@ -74,26 +74,43 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         services.delete_blob(blob, flask.request.user_token)
 
         return {
-            "message": "Blob deleted"
+            "message": f"Blob {blob} deleted successfully"
         }
 
     @app.route(f"{endpoint}/blobs/<blob>/permissions/<username>", methods=["POST"])
     def post_blob_permission(blob: str, username: str) -> flask.Response:
-        services.add_read_permission(blob, flask.request.user_token, username)
+        try:
+            services.add_read_permission(blob, flask.request.user_token, username)
+        except exceptions.UserHavePermissionsError:
+            return {
+                "message": f"User {username} already has permissions for blob {blob}"
+            }, 409
 
-        return flask.Response(status=200)
+        return {
+            "message": f"Permission added to user {username} successfully"
+        }
 
     @app.route(f"{endpoint}/blobs/<blob>/permissions/<username>", methods=["DELETE"])
     def delete_blob_permission(blob: str, username: str) -> flask.Response:
-        services.remove_read_permission(blob, flask.request.user_token, username)
+        try:
+            services.remove_read_permission(blob, flask.request.user_token, username)
+        except exceptions.UserHaveNoPermissionsError:
+            return {
+                "message": f"User {username} has no permissions to remove for blob {blob}"
+            }, 409
 
-        return flask.Response(status=200)
+        return {
+            "message": f"Permission removed from user {username} successfully"
+        }
 
     @app.route(f"{endpoint}/blobs/<blob>/hashes", methods=["GET"])
     def get_blob_hashes(blob: str) -> flask.Response:
-        hashes = services.get_hash_blob(blob, flask.request.user_token)
+        _md5, _sha256 = services.get_hash_blob(blob, flask.request.user_token)
 
-        return flask.jsonify(hashes)
+        return {
+            "md5": _md5,
+            "sha256": _sha256,
+        }
 
     return (
         before_request,

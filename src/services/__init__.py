@@ -2,6 +2,9 @@
 This module contains functions for 
 creating, updating, deleting, and retrieving Blob objects from a database.
 """
+import hashlib
+import io
+
 from src.entities import Blob, Client
 from src.objects import Visibility
 from src import exceptions
@@ -34,7 +37,7 @@ def create_blob(
 def update_blob(
         blob_id: str,
         user_token: str,
-        raw: bytes = None) -> Blob:
+        raw: io.BytesIO) -> Blob:
     """
     Updates the contents of a Blob object in the database.
 
@@ -84,7 +87,7 @@ def delete_blob(blob_id: str, user_token: str) -> None:
 
     blob.delete()
 
-def get_hash_blob(blob_id: str, user_token: str) -> int:
+def get_hash_blob(blob_id: str, user_token: str) -> tuple[str, str]:
     """
     Gets the hash of a Blob object from the database.
 
@@ -102,7 +105,10 @@ def get_hash_blob(blob_id: str, user_token: str) -> int:
     """
     blob = get_blob(blob_id, user_token)
 
-    return hash(blob)
+    _md5 = hashlib.file_digest(blob.stream, 'md5').hexdigest()
+    _sha256 = hashlib.file_digest(blob.stream, 'sha256').hexdigest()
+
+    return _md5, _sha256
 
 def get_blob(blob_id: str, user_token: str) -> Blob:
     """

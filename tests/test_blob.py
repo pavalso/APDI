@@ -43,10 +43,5 @@ class TestBlob(unittest.TestCase):
         self.default_blob.delete()
         assert os.path.isfile(self.default_blob.file_path) == False
 
-    def test_hash(self):
-        _bytes = b'123456' * 1000
-        self.default_blob.write(_bytes)
-        assert hash(self.default_blob) == 1404332994597457676
-
     def tearDown(self):
         self.default_blob.delete()
