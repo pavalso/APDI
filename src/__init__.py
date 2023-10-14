@@ -24,7 +24,7 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
     def before_request() -> None:
         user_token = flask.request.headers.get("Authorization")
         flask.request.user_token = user_token
-        flask.request.get_json(cache=True, silent=True)
+        flask.request.json = flask.request.get_json(silent=True) or {}
 
     @app.errorhandler(exceptions.BlobNotFoundError)
     @app.errorhandler(exceptions.adiauth.UserNotExists)
@@ -50,7 +50,9 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
     @app.route(f"{endpoint}/blobs/", methods=["POST"])
     def post_blob() -> flask.Response:
-        visibility = objects.Visibility.PUBLIC#flask.request.get_json(silent=True).get('visibility', objects.Visibility.PRIVATE)
+        _v = flask.request.json.get('visibility', objects.Visibility.PRIVATE)
+
+        visibility = objects.Visibility(_v)
 
         blob_ = services.create_blob(flask.request.user_token, visibility)
 
@@ -125,7 +127,12 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
         handle_not_found)
 
-def main(port=3002, host="0.0.0.0", db_path="pyblob.db", storage="storage", auth_api="http://localhost:3001") -> NoReturn:
+def main(
+        port=3002,
+        host="0.0.0.0",
+        db_path="pyblob.db",
+        storage="storage",
+        auth_api="http://localhost:3001") -> NoReturn:
     """
     Creates a DB connection and runs the Flask app.
     """
