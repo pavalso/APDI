@@ -133,8 +133,6 @@ def main(port=3002, host="0.0.0.0", db_path="pyblob.db", storage="storage", auth
     os.environ["STORAGE"] = storage
     os.environ["AUTH_API"] = auth_api
 
-    os.makedirs(storage, exist_ok=True)
-
     with db.connect(db_path):
         app = flask.Flask(__name__)
 

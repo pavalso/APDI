@@ -35,6 +35,8 @@ class _FileBlob(io.FileIO):
         self.file_name = f'{_id}.{_SUFIX}'
         self.file_path = os.path.join(self._dir, self.file_name)
 
+        os.makedirs(self._dir, exist_ok=True)
+
         super().__init__(self.file_path, 'a+b')
 
     def delete(self) -> None:
