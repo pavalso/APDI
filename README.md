@@ -108,6 +108,7 @@ Asigna permisos de lectura de un blob a un usuario.
 - **Respuestas:**
   - **Código 200 (Éxito):** Se asignaron permisos de lectura al usuario con éxito.
   - **Código 404 (No encontrado):** El blob con el UUID especificado no se encontró.
+  - **Código 409 (Conflicto):** El usuario ya tiene permisos de lectura para el blob.
 
 #### Quitar Permiso de Lectura a un Usuario
 Revoca los permisos de lectura de un blob a un usuario.
@@ -120,6 +121,7 @@ Revoca los permisos de lectura de un blob a un usuario.
 - **Respuestas:**
   - **Código 200 (Éxito):** Se revocaron los permisos de lectura al usuario con éxito.
   - **Código 404 (No encontrado):** El blob con el UUID especificado no se encontró.
+  - **Código 409 (Conflicto):** El usuario no tiene permisos de lectura para el blob.
 
 #### Obtener Sumas Hash del Blob
 Obtén sumas hash (MD5, SHA256, etc.) del contenido de un blob al que tengas permiso de lectura.
