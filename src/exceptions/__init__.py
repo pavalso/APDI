@@ -2,6 +2,9 @@
 This module contains custom exceptions that can be raised in the application.
 """
 
+from adiauthcli import errors as adiauth
+
+
 class BlobNotFoundError(Exception):
     """
     Exception raised when a blob with a given ID is not found.
@@ -71,3 +74,5 @@ class UserHaveNoPermissionsError(Exception):
 
     def __init__(self, blob: str, user: str) -> None:
         super().__init__(f'User {user} does not have permissions for blob {blob}')
+
+__exports__ = [adiauth]

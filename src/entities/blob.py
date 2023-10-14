@@ -39,6 +39,7 @@ class _DBBlob(_FileBlob):
         """
         Deletes the Blob from the database.
         """
+        super().delete()
         Blob.delete(self.id_)
 
     def add_permissions(self, user: str) -> None:
@@ -69,7 +70,7 @@ class _DBBlob(_FileBlob):
         Returns:
             If the user has permissions for the Blob.
         """
-        return user == self.perms.owner or Perms.exists(self.id_, user)
+        return user == self.perms.owner or self.perms.visibility == Visibility.PUBLIC or Perms.exists(self.id_, user)
 
     def __str__(self) -> str:
         id_ = f'id={self.id_}'

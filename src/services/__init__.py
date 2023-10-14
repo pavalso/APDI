@@ -9,18 +9,16 @@ from src import exceptions
 
 def create_blob(
         user_token: str,
-        raw: bytes,
         visibility: Visibility = Visibility.PRIVATE) -> Blob:
     """
     Creates a new Blob object and inserts it into the database.
 
     Args:
         user_token: The token of the user creating the blob.
-        raw: The data to write to the Blob.
         visibility: Visibility of the blob.
 
     Returns:
-        Blob: The created Blob object or None if the Blob already exists.
+        Blob: The created Blob object
 
     Raises:
         BlobNotFoundError: If the Blob was not found 
@@ -30,8 +28,6 @@ def create_blob(
     user = Client.fetch_user(user_token)
 
     blob = user.create_blob(visibility)
-
-    blob.write(raw)
 
     return blob
 
@@ -48,7 +44,7 @@ def update_blob(
         raw: The data to write to the Blob.
 
     Returns:
-        Blob: The updated Blob object or None if the Blob was not found.
+        Blob: The updated Blob object.
 
     Raises:
         BlobNotFoundError: If the Blob was not found 
@@ -57,7 +53,10 @@ def update_blob(
     """
     user = Client.fetch_user(user_token)
 
-    blob = user.blobs[blob_id]
+    blob = user.blobs.get(blob_id)
+
+    if blob is None:
+        raise exceptions.BlobNotFoundError(blob_id)
 
     blob.write(raw)
 
@@ -78,7 +77,10 @@ def delete_blob(blob_id: str, user_token: str) -> None:
     """
     user = Client.fetch_user(user_token)
 
-    blob = user.blobs[blob_id]
+    blob = user.blobs.get(blob_id)
+
+    if blob is None:
+        raise exceptions.BlobNotFoundError(blob_id)
 
     blob.delete()
 
@@ -91,7 +93,7 @@ def get_hash_blob(blob_id: str, user_token: str) -> int:
         user_token: The token of the Blob owner.
 
     Returns:
-        int: The hash of the Blob or None if the Blob was not found.
+        int: The hash of the Blob.
 
     Raises:
         BlobNotFoundError: If the Blob was not found 
@@ -110,16 +112,19 @@ def get_blob(blob_id: str, user_token: str) -> Blob:
         blob_id: The ID of the Blob.
 
     Returns:
-        Blob: The Blob object or None if the Blob was not found.
+        Blob: The Blob object.
 
     Raises:
         BlobNotFoundError: If the Blob was not found 
             or the user does not have permission to access the Blob.
         UserNotExists: If the user token is invalid.
     """
-    user = Client.fetch_user(user_token)
-
     blob = Blob.fetch(blob_id)
+
+    if blob.perms.visibility == Visibility.PUBLIC:
+        return blob
+
+    user = Client.fetch_user(user_token)
 
     if not blob.has_permissions(user.username):
         raise exceptions.BlobNotFoundError(blob_id)

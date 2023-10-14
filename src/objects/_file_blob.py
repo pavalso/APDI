@@ -9,7 +9,6 @@ from ._blob import _Blob
 
 
 _SUFIX = 'blob'
-_BLOBS_DIR = 'storage'
 
 class _FileBlob(_Blob):
     """
@@ -17,6 +16,7 @@ class _FileBlob(_Blob):
     that stores data in a file.
     """
     _fp: io.FileIO = None
+    _dir: str = os.getenv("STORAGE", "storage")
 
     @property
     def id_(self) -> str:
@@ -37,7 +37,7 @@ class _FileBlob(_Blob):
         self.__id = _id
 
         self.file_name = f'{_id}.{_SUFIX}'
-        self.file_path = os.path.join(_BLOBS_DIR, self.file_name)
+        self.file_path = os.path.join(self._dir, self.file_name)
 
     def read(self, /) -> bytes:
         """
@@ -62,8 +62,8 @@ class _FileBlob(_Blob):
         Returns:
             int: The number of bytes written to the file.
         """
-        if not os.path.isdir(_BLOBS_DIR):
-            os.makedirs(_BLOBS_DIR, exist_ok=True)
+        if not os.path.isdir(self._dir):
+            os.makedirs(self._dir, exist_ok=True)
 
         with open(self.file_path, 'wb') as self._fp:
             return super().write(__b)

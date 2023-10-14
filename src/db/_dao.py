@@ -45,7 +45,7 @@ class _Dao:
         Args:
             db_name: The name of the database to connect to.
         """
-        self._conn = sqlite3.connect(db_name)
+        self._conn = sqlite3.connect(db_name, check_same_thread=False)
         self._cursor = self._conn.cursor()
 
         _query = f'''CREATE TABLE IF NOT EXISTS {self.BLOBS} (
@@ -172,7 +172,7 @@ class _Dao:
             self._cursor.execute(_query, (_id, user, 1))
             self._conn.commit()
         except sqlite3.IntegrityError:
-            raise exceptions.UserAlreadyHavePermissionsError(_id, user) from sqlite3.IntegrityError
+            raise exceptions.UserHavePermissionsError(_id, user) from sqlite3.IntegrityError
 
     def remove_perms(self, _id: str, user: str) -> None:
         """ 

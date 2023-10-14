@@ -2,6 +2,8 @@
 This module contains the Client class and its dependencies.
 """
 
+import os
+
 from adiauthcli import client
 
 from src.entities.blob import Blob, _DBBlob
@@ -9,6 +11,8 @@ from src.objects._perms import Visibility
 
 
 class _LoggedClient(client.Client):
+
+    _api = os.getenv("AUTH_API", "http://localhost:3001")
 
     @property
     def username(self) -> str:
@@ -34,7 +38,7 @@ class _LoggedClient(client.Client):
         """
         Initializes a new instance of the _LoggedClient class.
         """
-        super().__init__("http://localhost:5000", admin_token)
+        super().__init__(self._api, admin_token)
 
     def create_blob(self, visibility: Visibility) -> _DBBlob:
         """
