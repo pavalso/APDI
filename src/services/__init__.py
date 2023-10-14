@@ -138,6 +138,9 @@ def get_blob(blob_id: str, user_token: str) -> Blob:
 
     if blob.perms.visibility == Visibility.PUBLIC:
         return blob
+    
+    if user_token is None:
+        raise exceptions.BlobNotFoundError(blob_id)
 
     user = Client.fetch_user(user_token)
 

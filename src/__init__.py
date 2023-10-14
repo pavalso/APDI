@@ -24,7 +24,7 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
     def before_request() -> None:
         user_token = flask.request.headers.get("Authorization")
         flask.request.user_token = user_token
-        flask.request.json = flask.request.get_json(silent=True) or {}
+        flask.request.json_ = flask.request.get_json(silent=True) or {}
 
     @app.errorhandler(exceptions.BlobNotFoundError)
     @app.errorhandler(exceptions.adiauth.UserNotExists)
@@ -50,9 +50,11 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
     @app.route(f"{endpoint}/blobs/", methods=["POST"])
     def post_blob() -> flask.Response:
-        _v = flask.request.json.get('visibility', objects.Visibility.PRIVATE)
+        _v = flask.request.json_.get('visibility', objects.Visibility.PRIVATE)
 
         visibility = objects.Visibility(_v)
+
+        print(visibility)
 
         blob_ = services.create_blob(flask.request.user_token, visibility)
 
