@@ -58,6 +58,16 @@ class Client:
     """
 
     @staticmethod
+    def check_connection() -> bool:
+        """
+        Checks the connection to the authentication API.
+
+        Returns:
+            A boolean representing the connection status.
+        """
+        raise NotImplementedError
+
+    @staticmethod
     def fetch_user(token: str) -> _LoggedClient:
         """
         Fetches a user.

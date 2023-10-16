@@ -9,9 +9,14 @@ from typing import NoReturn, Callable
 
 import flask
 
+from src import _logger
+
+logger = _logger.get_logger()
+
 from src import exceptions
 from src import services
 from src import objects
+from src import entities
 from src import db
 
 
@@ -53,8 +58,6 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         _v = flask.request.json_.get('visibility', objects.Visibility.PRIVATE)
 
         visibility = objects.Visibility(_v)
-
-        print(visibility)
 
         blob_ = services.create_blob(flask.request.user_token, visibility)
 
@@ -142,6 +145,9 @@ def main(
     os.environ["STORAGE"] = storage
     os.environ["AUTH_API"] = auth_api
 
+    #if not entities.Client.check_connection():
+    #    raise RuntimeError(f"Could not connect to {auth_api}")
+
     with db.connect(db_path):
         app = flask.Flask(__name__)
 
@@ -149,7 +155,6 @@ def main(
 
         app.run(
             host=host,
-            port=port,
-            debug=True)
+            port=port)
 
     sys.exit(0)

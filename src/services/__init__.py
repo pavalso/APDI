@@ -2,6 +2,8 @@
 This module contains functions for 
 creating, updating, deleting, and retrieving Blob objects from a database.
 """
+
+import logging
 import hashlib
 import io
 
@@ -11,6 +13,8 @@ from src import exceptions
 
 
 _BUFF_SIZE = 1024 * 1024
+
+logger = logging.getLogger("APDI")
 
 def create_blob(
         user_token: str,
@@ -33,6 +37,8 @@ def create_blob(
     user = Client.fetch_user(user_token)
 
     blob = user.create_blob(visibility)
+
+    logger.debug("Created blob %s for user %s", blob.id_, user.username)
 
     return blob
 
@@ -64,6 +70,8 @@ def update_blob(
         raise exceptions.BlobNotFoundError(blob_id)
 
     blob.truncate(0)
+
+    logger.debug("Writing %d bytes to blob %s", len(raw.read()), blob_id)
 
     while (chunk := raw.read(_BUFF_SIZE)) != b'':
         blob.write(chunk)
@@ -138,7 +146,7 @@ def get_blob(blob_id: str, user_token: str) -> Blob:
 
     if blob.perms.visibility == Visibility.PUBLIC:
         return blob
-    
+
     if user_token is None:
         raise exceptions.BlobNotFoundError(blob_id)
 

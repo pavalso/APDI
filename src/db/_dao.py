@@ -3,12 +3,15 @@ This module contains the implementation of a Data Access Object (DAO)
 for interacting with the SQLite database.
 """
 
+import logging
 import sqlite3
 
 from os import PathLike
 
 from src import exceptions
 
+
+logger = logging.getLogger("APDI")
 
 class _Ctx:
     """
@@ -45,6 +48,9 @@ class _Dao:
         Args:
             db_name: The name of the database to connect to.
         """
+
+        logger.info("Connecting to database %s", db_name)
+
         self._conn = sqlite3.connect(db_name, check_same_thread=False)
         self._cursor = self._conn.cursor()
 
@@ -239,6 +245,9 @@ class _Dao:
         """
         Closes the connection to the database.
         """
+
+        logger.info("Closing database connection")
+
         self._conn.close()
 
 _DAO = _Dao()
