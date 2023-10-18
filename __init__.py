@@ -69,3 +69,5 @@ if __name__ == "__main__":
     except RuntimeError:
         print(f"[!] Auth API at {args.auth_api} is not running.")
         sys.exit(2)
+
+    sys.exit(0)

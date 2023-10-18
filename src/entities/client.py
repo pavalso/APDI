@@ -77,6 +77,9 @@ class Client:
 
         Returns:
             A Client object representing the fetched user.
+
+        Raises:
+            UserNotExists: If the user does not exist.
         """
         _c = _LoggedClient()
 

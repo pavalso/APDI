@@ -2,23 +2,20 @@
 This module contains the main entry point for the APDI application.
 """
 
-import sys
 import os
+import logging
 
-from typing import NoReturn, Callable
+from typing import Callable
 
 import flask
-
-from src import _logger
-
-logger = _logger.get_logger()
 
 from src import exceptions
 from src import services
 from src import objects
-from src import entities
 from src import db
 
+
+logger = logging.getLogger("APDI")
 
 __version__ = "v1"
 
@@ -37,6 +34,12 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         return flask.jsonify({
             "error": str(error)
             }), 404
+
+    @app.route(f"{endpoint}/status/", methods=["GET"])
+    def get_status() -> flask.Response:
+        return {
+            "message": f"API {__version__} up and running"
+        }
 
     @app.route(f"{endpoint}/blobs/<blob>", methods=["GET"])
     def get_blob(blob: str) -> flask.Response:
@@ -137,7 +140,7 @@ def main(
         host="0.0.0.0",
         db_path="pyblob.db",
         storage="storage",
-        auth_api="http://localhost:3001") -> NoReturn:
+        auth_api="http://localhost:3001") -> None:
     """
     Creates a DB connection and runs the Flask app.
     """
@@ -156,5 +159,3 @@ def main(
         app.run(
             host=host,
             port=port)
-
-    sys.exit(0)

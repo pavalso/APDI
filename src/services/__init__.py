@@ -3,22 +3,23 @@ This module contains functions for
 creating, updating, deleting, and retrieving Blob objects from a database.
 """
 
-import logging
 import hashlib
 import io
 
+from src._logger import LOGGER
+from src.entities.blob import _DBBlob
 from src.entities import Blob, Client
 from src.objects import Visibility
 from src import exceptions
 
 
-_BUFF_SIZE = 1024 * 1024
+logger = LOGGER
 
-logger = logging.getLogger("APDI")
+_BUFF_SIZE = 1024 * 1024
 
 def create_blob(
         user_token: str,
-        visibility: Visibility = Visibility.PRIVATE) -> Blob:
+        visibility: Visibility = Visibility.PRIVATE) -> _DBBlob:
     """
     Creates a new Blob object and inserts it into the database.
 
@@ -45,7 +46,7 @@ def create_blob(
 def update_blob(
         blob_id: str,
         user_token: str,
-        raw: io.BytesIO) -> Blob:
+        raw: io.BytesIO) -> _DBBlob:
     """
     Updates the contents of a Blob object in the database.
 
@@ -75,8 +76,6 @@ def update_blob(
 
     while (chunk := raw.read(_BUFF_SIZE)) != b'':
         blob.write(chunk)
-
-    blob.seek(0)
 
     return blob
 
@@ -125,7 +124,7 @@ def get_hash_blob(blob_id: str, user_token: str) -> tuple[str, str]:
 
     return _md5, _sha256
 
-def get_blob(blob_id: str, user_token: str) -> Blob:
+def get_blob(blob_id: str, user_token: str) -> _DBBlob:
     """
     Gets a Blob object from the database.
 
@@ -142,8 +141,6 @@ def get_blob(blob_id: str, user_token: str) -> Blob:
     """
     blob = Blob.fetch(blob_id)
 
-    blob.seek(0)
-
     if blob.perms.visibility == Visibility.PUBLIC:
         return blob
 
@@ -157,7 +154,7 @@ def get_blob(blob_id: str, user_token: str) -> Blob:
 
     return blob
 
-def get_user_blobs(user_token: str) -> list[Blob]:
+def get_user_blobs(user_token: str) -> list[str]:
     """
     Gets all Blobs owned by a user.
 

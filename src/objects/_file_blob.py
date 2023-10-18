@@ -42,7 +42,7 @@ class _FileBlob(io.FileIO):
 
     def delete(self) -> None:
         """
-        Deletes the file.
+        Deletes the file blob.
         """
         super().close()
         if os.path.isfile(self.file_path):

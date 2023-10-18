@@ -5,13 +5,7 @@ This module provides logging functionality for APDI.
 import logging
 
 
-def get_logger() -> logging.Logger:
-    """
-    Get the logger for APDI.
-
-    Returns:
-        logging.Logger: The logger for APDI.
-    """
+def _get_logger() -> logging.Logger:
     _logger = logging.getLogger("APDI")
     _logger.setLevel(logging.DEBUG)
 
@@ -24,3 +18,5 @@ def get_logger() -> logging.Logger:
     _logger.addHandler(_handler)
 
     return _logger
+
+LOGGER = _get_logger()
