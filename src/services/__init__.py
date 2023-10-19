@@ -16,6 +16,7 @@ from src import exceptions
 logger = LOGGER
 
 _BUFF_SIZE = 1024 * 1024
+_AVAILABLE_HASHES = {"md5", "sha1", "sha256", "sha512"}
 
 def create_blob(
         user_token: str,
@@ -31,8 +32,6 @@ def create_blob(
         Blob: The created Blob object
 
     Raises:
-        BlobNotFoundError: If the Blob was not found 
-            or the user does not have permission to access the Blob.
         UserNotExists: If the user token is invalid.
     """
     user = Client.fetch_user(user_token)
@@ -72,7 +71,7 @@ def update_blob(
 
     blob.truncate(0)
 
-    logger.debug("Writing %d bytes to blob %s", len(raw.read()), blob_id)
+    logger.debug("Writing to blob %s", blob_id)
 
     while (chunk := raw.read(_BUFF_SIZE)) != b'':
         blob.write(chunk)
@@ -101,7 +100,7 @@ def delete_blob(blob_id: str, user_token: str) -> None:
 
     blob.delete()
 
-def get_hash_blob(blob_id: str, user_token: str) -> tuple[str, str]:
+def get_hash_blob(blob_id: str, user_token: str, hashes_types: str) -> tuple[str, str]:
     """
     Gets the hash of a Blob object from the database.
 
@@ -119,10 +118,16 @@ def get_hash_blob(blob_id: str, user_token: str) -> tuple[str, str]:
     """
     blob = get_blob(blob_id, user_token)
 
-    _md5 = hashlib.file_digest(blob, 'md5', _bufsize = _BUFF_SIZE).hexdigest()
-    _sha256 = hashlib.file_digest(blob, 'sha256', _bufsize = _BUFF_SIZE).hexdigest()
+    for hash_type in hashes_types:
+        if hash_type not in _AVAILABLE_HASHES:
+            raise ValueError(f"Invalid hash type: {hash_type}")
 
-    return _md5, _sha256
+    res = {
+        hash_type: hashlib.file_digest(blob, hash_type, _bufsize = _BUFF_SIZE).hexdigest()
+        for hash_type in hashes_types
+    }
+
+    return res
 
 def get_blob(blob_id: str, user_token: str) -> _DBBlob:
     """

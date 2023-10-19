@@ -45,7 +45,6 @@ def _parse_args() -> ArgumentParser:
     return parser.parse_args()
 
 if __name__ == "__main__":
-
     try:
         args = _parse_args()
     except URLError:

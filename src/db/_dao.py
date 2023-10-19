@@ -13,20 +13,6 @@ from src import exceptions
 
 logger = logging.getLogger("APDI")
 
-class _Ctx:
-    """
-    A context manager for handling database connections.
-    """
-
-    def __init__(self, _dao: '_Dao') -> None:
-        self._dao = _dao
-
-    def __enter__(self):
-        return
-
-    def __exit__(self, *_):
-        self._dao.close()
-
 class _Dao:
     """
     This class represents a Data Access Object (DAO) for interacting with a SQLite database.
@@ -41,7 +27,7 @@ class _Dao:
         self._conn = None
         self._cursor = None
 
-    def connect(self, db_name: PathLike) -> _Ctx:
+    def connect(self, db_name: PathLike) -> '_Dao':
         """
         Connects to the specified SQLite database and creates the necessary tables.
 
@@ -64,14 +50,14 @@ class _Dao:
 
         _query = f'''CREATE TABLE IF NOT EXISTS {self.PERMS} (
             id TEXT,
-            user TEXT,
+            user TEXT UNIQUE,
             perms INTEGER DEFAULT 0 NOT NULL,
             PRIMARY KEY (id, user),
             FOREIGN KEY (id) REFERENCES {self.BLOBS}(id))'''
 
         self._cursor.execute(_query)
 
-        return _Ctx(self)
+        return self
 
     def new_blob(self, _id: str, owner: str, visibility: int = False) -> None:
         """
@@ -171,14 +157,24 @@ class _Dao:
         Raises:
             BlobNotFoundError: If the blob with the specified ID is not found.
         """
-        _query = f'''INSERT INTO {self.PERMS} (id, user, perms)
+        self.bulk_add_perms(_id, {user})
+
+    def bulk_add_perms(self, _id: str, users: set[str]) -> None:
+        """
+        Adds permissions to multiple users for a blob.
+
+        Args:
+            _id: The ID of the blob.
+            users: The users to add permissions for.
+
+        Raises:
+            BlobNotFoundError: If the blob with the specified ID is not found.
+        """
+        _query = f'''INSERT OR IGNORE INTO {self.PERMS} (id, user, perms)
             VALUES (?, ?, ?)'''
 
-        try:
-            self._cursor.execute(_query, (_id, user, 1))
-            self._conn.commit()
-        except sqlite3.IntegrityError:
-            raise exceptions.UserHavePermissionsError(_id, user) from sqlite3.IntegrityError
+        self._cursor.executemany(_query, [(_id, user, 0) for user in users])
+        self._conn.commit()
 
     def remove_perms(self, _id: str, user: str) -> None:
         """ 
@@ -223,6 +219,23 @@ class _Dao:
 
         return _r if _r is None else _r[0]
 
+    def get_blob_perms(self, _id: str) -> list[tuple]:
+        """
+        Retrieves all permissions for a blob.
+
+        Args:
+            _id: The ID of the blob.
+
+        Returns:
+            list[tuple]: A list of tuples representing the permissions.
+        """
+        _query = f'''SELECT *
+            FROM {self.PERMS}
+            WHERE id=?'''
+        self._cursor.execute(_query, (_id,))
+
+        return self._cursor.fetchall()
+
     def get_blobs(self, user: str) -> list[tuple]:
         """
         Retrieves all blobs owned by a user.
@@ -249,6 +262,12 @@ class _Dao:
         logger.info("Closing database connection")
 
         self._conn.close()
+
+    def __enter__(self) -> '_Dao':
+        return self
+
+    def __exit__(self, *_):
+        self.close()
 
 _DAO = _Dao()
 

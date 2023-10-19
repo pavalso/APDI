@@ -22,7 +22,7 @@ class _Perms:
     A class representing the permissions of an entity.
     """
 
-    def __init__(self, owner: str, visibility: Visibility, allowed_users: set[str]) -> None:
+    def __init__(self, owner: str, visibility: Visibility) -> None:
         """
         Initializes a new instance of the Perms class.
 
@@ -33,6 +33,5 @@ class _Perms:
         """
         self.owner = owner
         self.visibility = Visibility(visibility)
-        self.allowed_users = allowed_users or set()
 
 __export__ = (_Perms,)

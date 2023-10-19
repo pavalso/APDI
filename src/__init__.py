@@ -17,6 +17,7 @@ from src import db
 
 logger = logging.getLogger("APDI")
 
+__app__ = "APDI"
 __version__ = "v1"
 
 def _route_app(app: flask.Flask) -> tuple[Callable]:
@@ -24,21 +25,34 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
     @app.before_request
     def before_request() -> None:
-        user_token = flask.request.headers.get("Authorization")
+        user_token = flask.request.headers.get("AuthToken")
         flask.request.user_token = user_token
         flask.request.json_ = flask.request.get_json(silent=True) or {}
 
-    @app.errorhandler(exceptions.BlobNotFoundError)
+    @app.errorhandler(500)
+    def handle_server_error(error: Exception) -> flask.Response:
+        logger.exception(error)
+        return flask.jsonify({
+            "error": str(error)
+            }), 500
+
     @app.errorhandler(exceptions.adiauth.UserNotExists)
-    def handle_not_found(error: Exception) -> flask.Response:
+    def handle_user_not_exists(error: Exception) -> flask.Response:
+        return flask.jsonify({
+            "error": str(error)
+            }), 401
+
+    @app.errorhandler(exceptions.BlobNotFoundError)
+    def handle_blob_not_found(error: Exception) -> flask.Response:
         return flask.jsonify({
             "error": str(error)
             }), 404
 
+    @app.route("/", methods=["GET"])
     @app.route(f"{endpoint}/status/", methods=["GET"])
     def get_status() -> flask.Response:
         return {
-            "message": f"API {__version__} up and running"
+            "message": f"API {__app__} {__version__} up and running"
         }
 
     @app.route(f"{endpoint}/blobs/<blob>", methods=["GET"])
@@ -49,11 +63,18 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
     @app.route(f"{endpoint}/blobs/", methods=["GET"])
     def get_blobs() -> flask.Response:
-        blobs = services.get_user_blobs(flask.request.user_token)
+        blob_ids = services.get_user_blobs(flask.request.user_token)
+
+        res = [
+            {
+                "blobId": id,
+                "accessUrl": f"{endpoint}/blobs/{id}"
+            }
+            for id in blob_ids
+        ]
 
         return {
-            "blobs": blobs,
-            "message": f"Retrieved {len(blobs)} blobs successfully"
+            "blobs": res
         }
 
     @app.route(f"{endpoint}/blobs/", methods=["POST"])
@@ -65,27 +86,21 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         blob_ = services.create_blob(flask.request.user_token, visibility)
 
         return {
-            "id": blob_.id_,
-            "message": "Blob created successfully"
-        }
+            "blobId": blob_.id_,
+            "accessUrl": f"{endpoint}/blobs/{blob_.id_}"
+        }, 201
 
     @app.route(f"{endpoint}/blobs/<blob>", methods=["PUT"])
     def put_blob(blob: str) -> flask.Response:
-        stream = flask.request.stream
+        services.update_blob(blob, flask.request.user_token, flask.request.stream)
 
-        services.update_blob(blob, flask.request.user_token, stream)
-
-        return {
-            "message": f"Blob {blob} updated successfully"
-        }
+        return "", 204
 
     @app.route(f"{endpoint}/blobs/<blob>", methods=["DELETE"])
     def delete_blob(blob: str) -> flask.Response:
         services.delete_blob(blob, flask.request.user_token)
 
-        return {
-            "message": f"Blob {blob} deleted successfully"
-        }
+        return "", 204
 
     @app.route(f"{endpoint}/blobs/<blob>/permissions/<username>", methods=["POST"])
     def post_blob_permission(blob: str, username: str) -> flask.Response:
@@ -113,17 +128,24 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
             "message": f"Permission removed from user {username} successfully"
         }
 
-    @app.route(f"{endpoint}/blobs/<blob>/hashes", methods=["GET"])
+    @app.route(f"{endpoint}/blobs/<blob>/hash", methods=["GET"])
     def get_blob_hashes(blob: str) -> flask.Response:
-        _md5, _sha256 = services.get_hash_blob(blob, flask.request.user_token)
+        hash_type = flask.request.args.get("type", "md5")
 
-        return {
-            "md5": _md5,
-            "sha256": _sha256,
-        }
+        hash_list = hash_type.split(",")
+
+        try:
+            _hashes = services.get_hash_blob(blob, flask.request.user_token, hash_list)
+        except ValueError as e:
+            return {
+                "error": str(e)
+            }, 400
+
+        return _hashes
 
     return (
         before_request,
+        get_status,
         get_blob,
         get_blobs,
         post_blob,
@@ -133,7 +155,9 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         delete_blob_permission,
         get_blob_hashes,
 
-        handle_not_found)
+        handle_blob_not_found,
+        handle_user_not_exists,
+        handle_server_error)
 
 def main(
         port=3002,
@@ -152,7 +176,7 @@ def main(
     #    raise RuntimeError(f"Could not connect to {auth_api}")
 
     with db.connect(db_path):
-        app = flask.Flask(__name__)
+        app = flask.Flask(__app__)
 
         _route_app(app)
 

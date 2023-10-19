@@ -15,12 +15,21 @@ class _DBBlob(_FileBlob):
     Represents a Blob object that is stored in a database.
     """
 
+    @property
+    def allowed_users(self) -> set[str]:
+        """
+        Gets the permissions for the Blob.
+
+        Returns:
+            The permissions for the Blob.
+        """
+        return Perms.fetch_blob_perms(self.id_)
+
     def __init__(
             self,
             _id: str,
             owner: str,
-            visibility: Visibility = Visibility.PRIVATE,
-            allowed_users: set[str] = None) -> None:
+            visibility: Visibility = Visibility.PRIVATE) -> None:
         """
         Initializes a new Blob object.
 
@@ -33,7 +42,9 @@ class _DBBlob(_FileBlob):
         """
         super().__init__(_id)
 
-        self.perms = _Perms(owner, visibility, allowed_users)
+        self.seek(0)
+
+        self.perms = _Perms(owner, visibility)
 
     def delete(self) -> None:
         """
@@ -70,14 +81,15 @@ class _DBBlob(_FileBlob):
         Returns:
             If the user has permissions for the Blob.
         """
-        return user == self.perms.owner or self.perms.visibility == Visibility.PUBLIC or Perms.exists(self.id_, user)
+        return user == self.perms.owner \
+            or self.perms.visibility == Visibility.PUBLIC \
+            or Perms.exists(self.id_, user)
 
     def __str__(self) -> str:
         id_ = f'id={self.id_}'
         owner_ = f'owner={self.perms.owner}'
         visibility_ = f'visibility={self.perms.visibility}'
-        allowed_users_ = f'allowed_users={self.perms.allowed_users}'
-        return f'Blob({id_}, {owner_}, {visibility_}, {allowed_users_})'
+        return f'Blob({id_}, {owner_}, {visibility_})'
 
 class Blob:
     """
@@ -149,7 +161,7 @@ class Blob:
 
         _b.perms.owner = owner or _b.perms.owner
         _b.perms.visibility = visibility or _b.perms.visibility
-        _b.perms.allowed_users = allowed_users or _b.perms.allowed_users
+        #_b.perms.allowed_users = allowed_users or _b.perms.allowed_users
 
         _DAO.update_blob(_id, _b.perms.owner, _b.perms.visibility.value)
 
@@ -170,7 +182,8 @@ class Blob:
 
         _bs = {
             _id: _DBBlob(_id, user, Visibility(_v))
-            for _id, _, _v in _r }
+            for _id, _, _v in _r 
+        }
 
         return _bs
 

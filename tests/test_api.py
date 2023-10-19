@@ -80,6 +80,10 @@ class TestServices(unittest.TestCase):
         raw = io.BytesIO(b'blob data')
 
         blob = services.update_blob(blob.id_, 'user_token', raw)
+
+        raw.seek(0)
+        blob.seek(0)
+
         self.assertEqual(blob.read(), raw.read())
 
     @patch('requests.get')
@@ -98,6 +102,9 @@ class TestServices(unittest.TestCase):
         raw = io.BytesIO(b'blob data' * 100000)
 
         blob = services.update_blob(blob.id_, 'user_token', raw)
+
+        raw.seek(0)
+        blob.seek(0)
 
         self.assertEqual(blob.read(), raw.read())
 
