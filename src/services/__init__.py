@@ -176,6 +176,31 @@ def get_user_blobs(user_token: str) -> list[str]:
 
     return list(user.blobs.keys())
 
+def _get_blob_only_owner(blob_id: str, user_token: str) -> _DBBlob:
+    """
+    Gets a Blob object from the database, only if the user is the owner.
+
+    Args:
+        blob_id: The ID of the Blob.
+        user_token: The token of the Blob owner.
+
+    Returns:
+        Blob: The Blob object.
+
+    Raises:
+        BlobNotFoundError: If the Blob was not found 
+            or the user does not have permission to access the Blob.
+        UserNotExists: If the user token is invalid.
+    """
+    user = Client.fetch_user(user_token)
+
+    blob = user.blobs.get(blob_id)
+
+    if blob is None:
+        raise exceptions.BlobNotFoundError(blob_id)
+
+    return blob
+
 def add_read_permission(blob_id: str, user_token: str, username: str) -> None:
     """
     Adds a user to the list of users allowed to read a Blob.
@@ -189,9 +214,8 @@ def add_read_permission(blob_id: str, user_token: str, username: str) -> None:
         BlobNotFoundError: If the Blob was not found 
             or the user does not have permission to access the Blob.
         UserNotExists: If the user token is invalid.
-        UserHavePermissionsError: If the user already has permissions for the Blob.
     """
-    blob = get_blob(blob_id, user_token)
+    blob = _get_blob_only_owner(blob_id, user_token)
 
     blob.add_permissions(username)
 
@@ -208,8 +232,66 @@ def remove_read_permission(blob_id: str, user_token: str, username: str) -> None
         BlobNotFoundError: If the Blob was not found 
             or the user does not have permission to access the Blob.
         UserNotExists: If the user token is invalid.
-        UserHaveNoPermissionsError: If the user does not have permissions for the Blob.
     """
-    blob = get_blob(blob_id, user_token)
+    blob = _get_blob_only_owner(blob_id, user_token)
 
     blob.remove_permissions(username)
+
+def get_read_permissions(blob_id: str, user_token: str) -> list[str] | None:
+    """
+    Gets all users allowed to read a Blob.
+
+    Args:
+        blob_id: The ID of the Blob.
+        user_token: The token of the Blob owner.
+
+    Returns:
+        list[str]: A list of usernames allowed to read the Blob or None if the Blob is public.
+
+    Raises:
+        BlobNotFoundError: If the Blob was not found 
+            or the user does not have permission to access the Blob.
+        UserNotExists: If the user token is invalid.
+    """
+    blob = _get_blob_only_owner(blob_id, user_token)
+
+    if blob.perms.visibility == Visibility.PUBLIC:
+        return None
+
+    return list(blob.allowed_users)
+
+def put_read_permissions(blob_id: str, user_token: str, usernames: set[str]) -> None:
+    """
+    Sets the list of users allowed to read a Blob.
+
+    Args:
+        blob_id: The ID of the Blob.
+        user_token: The token of the Blob owner.
+        usernames: The list of usernames to set.
+
+    Raises:
+        BlobNotFoundError: If the Blob was not found 
+            or the user does not have permission to access the Blob.
+        UserNotExists: If the user token is invalid.
+    """
+    blob = _get_blob_only_owner(blob_id, user_token)
+
+    blob.allowed_users = usernames
+
+def patch_read_permissions(blob_id: str, user_token: str, usernames: set[str]) -> None:
+    """
+    Adds users to the list of users allowed to read a Blob.
+
+    Args:
+        blob_id: The ID of the Blob.
+        user_token: The token of the Blob owner.
+        usernames: The list of usernames to add.
+
+    Raises:
+        BlobNotFoundError: If the Blob was not found 
+            or the user does not have permission to access the Blob.
+        UserNotExists: If the user token is invalid.
+    """
+    blob = _get_blob_only_owner(blob_id, user_token)
+
+    blob.allowed_users |= usernames

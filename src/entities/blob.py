@@ -23,7 +23,17 @@ class _DBBlob(_FileBlob):
         Returns:
             The permissions for the Blob.
         """
-        return Perms.fetch_blob_perms(self.id_)
+        return set(Perms.fetch_blob_perms(self.id_))
+
+    @allowed_users.setter
+    def allowed_users(self, value: set[str]) -> None:
+        """
+        Sets the permissions for the Blob.
+
+        Args:
+            value: The new permissions for the Blob.
+        """
+        Perms.put_blob_perms(self.id_, value)
 
     def __init__(
             self,

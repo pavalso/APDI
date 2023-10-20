@@ -45,7 +45,7 @@ class Perms:
             If the user has permissions for the blob.
         """
         return _DAO.get_user_perms(blob, user) is not None
-    
+
     @staticmethod
     def bulk_create_perms(blob: str, users: set[str]) -> None:
         """
@@ -71,3 +71,14 @@ class Perms:
         _r = _DAO.get_blob_perms(blob)
 
         return [i[1] for i in _r]
+
+    @staticmethod
+    def put_blob_perms(blob: str, users: set[str]) -> None:
+        """
+        Sets the permissions for a blob.
+
+        Args:
+            blob: The blob to set permissions for.
+            users: The users to set permissions for.
+        """
+        _DAO.replace_perms(blob, users)

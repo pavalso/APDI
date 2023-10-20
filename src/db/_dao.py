@@ -191,10 +191,24 @@ class _Dao:
             WHERE id=? AND user=?'''
         self._cursor.execute(_query, (_id, user))
 
-        if self._cursor.rowcount == 0:
-            raise exceptions.UserHaveNoPermissionsError(_id, user)
-
         self._conn.commit()
+
+    def replace_perms(self, _id: str, users: set[str]) -> None:
+        """
+        Replaces the permissions of a blob with the specified users.
+
+        Args:
+            _id: The ID of the blob.
+            users: The users to set permissions for.
+
+        Raises:
+            BlobNotFoundError: If the blob with the specified ID is not found.
+        """
+        _query = f'''DELETE FROM {self.PERMS}
+            WHERE id=?'''
+        self._cursor.execute(_query, (_id,))
+
+        self.bulk_add_perms(_id, users)
 
     def get_user_perms(self, _id: str, user: str) -> tuple:
         """

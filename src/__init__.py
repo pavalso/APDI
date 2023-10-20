@@ -69,8 +69,7 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
             {
                 "blobId": id,
                 "accessUrl": f"{endpoint}/blobs/{id}"
-            }
-            for id in blob_ids
+            } for id in blob_ids
         ]
 
         return {
@@ -102,32 +101,6 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
         return "", 204
 
-    @app.route(f"{endpoint}/blobs/<blob>/permissions/<username>", methods=["POST"])
-    def post_blob_permission(blob: str, username: str) -> flask.Response:
-        try:
-            services.add_read_permission(blob, flask.request.user_token, username)
-        except exceptions.UserHavePermissionsError:
-            return {
-                "message": f"User {username} already has permissions for blob {blob}"
-            }, 409
-
-        return {
-            "message": f"Permission added to user {username} successfully"
-        }
-
-    @app.route(f"{endpoint}/blobs/<blob>/permissions/<username>", methods=["DELETE"])
-    def delete_blob_permission(blob: str, username: str) -> flask.Response:
-        try:
-            services.remove_read_permission(blob, flask.request.user_token, username)
-        except exceptions.UserHaveNoPermissionsError:
-            return {
-                "message": f"User {username} has no permissions to remove for blob {blob}"
-            }, 409
-
-        return {
-            "message": f"Permission removed from user {username} successfully"
-        }
-
     @app.route(f"{endpoint}/blobs/<blob>/hash", methods=["GET"])
     def get_blob_hashes(blob: str) -> flask.Response:
         hash_type = flask.request.args.get("type", "md5")
@@ -143,6 +116,55 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
         return _hashes
 
+    @app.route(f"{endpoint}/blobs/<blob>/acl/<userId>", methods=["POST"])
+    def post_acl(blob: str, userId: str) -> flask.Response:
+        services.add_read_permission(blob, flask.request.user_token, userId)
+
+        return "", 204
+
+    @app.route(f"{endpoint}/blobs/<blob>/acl/<userId>", methods=["DELETE"])
+    def delete_acl(blob: str, userId: str) -> flask.Response:
+        services.remove_read_permission(blob, flask.request.user_token, userId)
+
+        return "", 204
+
+    @app.route(f"{endpoint}/blobs/<blob>/acl/", methods=["GET"])
+    def get_acl(blob: str) -> flask.Response:
+        perms = services.get_read_permissions(blob, flask.request.user_token)
+
+        if perms is None:
+            return "", 204
+
+        return {
+            "acl": perms
+        }
+
+    @app.route(f"{endpoint}/blobs/<blob>/acl/", methods=["PUT"])
+    def put_acl(blob: str) -> flask.Response:
+        new_perms = flask.request.json_.get("acl")
+
+        if new_perms is None:
+            return {
+                "error": "Missing 'acl' key in JSON body"
+            }, 400
+
+        services.put_read_permissions(blob, flask.request.user_token, set(new_perms))
+
+        return "", 204
+
+    @app.route(f"{endpoint}/blobs/<blob>/acl/", methods=["PATCH"])
+    def patch_acl(blob: str) -> flask.Response:
+        new_perms = flask.request.json_.get("acl")
+
+        if new_perms is None:
+            return {
+                "error": "Missing 'acl' key in JSON body"
+            }, 400
+
+        services.patch_read_permissions(blob, flask.request.user_token, set(new_perms))
+
+        return "", 204
+
     return (
         before_request,
         get_status,
@@ -151,9 +173,12 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         post_blob,
         put_blob,
         delete_blob,
-        post_blob_permission,
-        delete_blob_permission,
         get_blob_hashes,
+        post_acl,
+        delete_acl,
+        get_acl,
+        put_acl,
+        patch_acl,
 
         handle_blob_not_found,
         handle_user_not_exists,

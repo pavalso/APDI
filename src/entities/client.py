@@ -12,8 +12,6 @@ from src.objects._perms import Visibility
 
 class _LoggedClient(client.Client):
 
-    _api = os.getenv("AUTH_API", "http://localhost:3001")
-
     @property
     def username(self) -> str:
         """
@@ -38,7 +36,9 @@ class _LoggedClient(client.Client):
         """
         Initializes a new instance of the _LoggedClient class.
         """
-        super().__init__(self._api, admin_token)
+        _api = os.getenv("AUTH_API", "http://localhost:3001")
+
+        super().__init__(_api, admin_token)
 
     def create_blob(self, visibility: Visibility) -> _DBBlob:
         """
