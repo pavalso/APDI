@@ -6,14 +6,43 @@ from uuid import uuid4
 
 from src.db import _DAO
 from src.objects._file_blob import _FileBlob
-from src.objects._perms import _Perms, Visibility
-from src.entities.perms import Perms
+from src.enums import Visibility
 
 
 class _DBBlob(_FileBlob):
     """
     Represents a Blob object that is stored in a database.
     """
+
+    @property
+    def owner(self) -> str:
+        """
+        Gets the owner of the Blob.
+
+        Returns:
+            The owner of the Blob.
+        """
+        return self._owner
+
+    @property
+    def visibility(self) -> Visibility:
+        """
+        Gets the visibility of the Blob.
+
+        Returns:
+            The visibility of the Blob.
+        """
+        return Visibility(_DAO.get_blob_visibility(self.id_))
+
+    @visibility.setter
+    def visibility(self, value: Visibility) -> None:
+        """
+        Sets the visibility of the Blob.
+
+        Args:
+            value: The new visibility of the Blob.
+        """
+        _DAO.update_blob_visibility(self.id_, value.value)
 
     @property
     def allowed_users(self) -> set[str]:
@@ -23,7 +52,7 @@ class _DBBlob(_FileBlob):
         Returns:
             The permissions for the Blob.
         """
-        return set(Perms.fetch_blob_perms(self.id_))
+        return {i[0] for i in _DAO.get_blob_perms(self.id_)}
 
     @allowed_users.setter
     def allowed_users(self, value: set[str]) -> None:
@@ -33,13 +62,12 @@ class _DBBlob(_FileBlob):
         Args:
             value: The new permissions for the Blob.
         """
-        Perms.put_blob_perms(self.id_, value)
+        _DAO.replace_perms(self.id_, value)
 
     def __init__(
             self,
             _id: str,
-            owner: str,
-            visibility: Visibility = Visibility.PRIVATE) -> None:
+            owner: str) -> None:
         """
         Initializes a new Blob object.
 
@@ -54,7 +82,7 @@ class _DBBlob(_FileBlob):
 
         self.seek(0)
 
-        self.perms = _Perms(owner, visibility)
+        self._owner = owner
 
     def delete(self) -> None:
         """
@@ -70,7 +98,7 @@ class _DBBlob(_FileBlob):
         Args:
             user: The user to add permissions for.
         """
-        Perms.create(self.id_, user)
+        _DAO.add_perms(self.id_, user)
 
     def remove_permissions(self, user: str) -> None:
         """
@@ -79,7 +107,7 @@ class _DBBlob(_FileBlob):
         Args:
             user: The user to remove permissions for.
         """
-        Perms.delete(self.id_, user)
+        _DAO.remove_perms(self.id_, user)
 
     def has_permissions(self, user: str) -> bool:
         """
@@ -91,15 +119,9 @@ class _DBBlob(_FileBlob):
         Returns:
             If the user has permissions for the Blob.
         """
-        return user == self.perms.owner \
-            or self.perms.visibility == Visibility.PUBLIC \
-            or Perms.exists(self.id_, user)
-
-    def __str__(self) -> str:
-        id_ = f'id={self.id_}'
-        owner_ = f'owner={self.perms.owner}'
-        visibility_ = f'visibility={self.perms.visibility}'
-        return f'Blob({id_}, {owner_}, {visibility_})'
+        return user == self.owner \
+            or self.visibility == Visibility.PUBLIC \
+            or _DAO.get_user_perms(self.id_, user) is not None
 
 class Blob:
     """
@@ -126,7 +148,7 @@ class Blob:
 
         _DAO.new_blob(_uuid, owner, visibility.value)
 
-        return _DBBlob(_uuid, owner, visibility)
+        return _DBBlob(_uuid, owner)
 
     @staticmethod
     def fetch(_id: str) -> _DBBlob:
@@ -142,38 +164,9 @@ class Blob:
         Raises:
             BlobNotFoundError: If the Blob with the given ID is not found in the database.
         """
-        _r = _DAO.get_blob(_id)
+        id_, owner, _ = _DAO.get_blob(_id)
 
-        _b = _DBBlob(*_r)
-
-        return _b
-
-    @staticmethod
-    def update(
-        _id: str, owner: str = None, visibility: Visibility = None,
-        allowed_users: set[str] = None) -> _DBBlob:
-        """
-        Updates a Blob object in the database.
-
-        Args:
-            _id: The ID of the Blob to update.
-            owner: The new owner of the Blob.
-            visibility: The new visibility of the Blob.
-            allowed_users: The new list of users allowed to access the Blob.
-
-        Returns:
-            Blob: The updated Blob object.
-
-        Raises:
-            BlobNotFoundError: If the Blob with the given ID is not found in the database.
-        """
-        _b = Blob.fetch(_id)
-
-        _b.perms.owner = owner or _b.perms.owner
-        _b.perms.visibility = visibility or _b.perms.visibility
-        #_b.perms.allowed_users = allowed_users or _b.perms.allowed_users
-
-        _DAO.update_blob(_id, _b.perms.owner, _b.perms.visibility.value)
+        _b = _DBBlob(id_, owner)
 
         return _b
 
@@ -191,8 +184,8 @@ class Blob:
         _r = _DAO.get_blobs(user)
 
         _bs = {
-            _id: _DBBlob(_id, user, Visibility(_v))
-            for _id, _, _v in _r 
+            _id: _DBBlob(_id, user)
+            for _id in _r
         }
 
         return _bs

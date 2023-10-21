@@ -9,7 +9,7 @@ import io
 from src._logger import LOGGER
 from src.entities.blob import _DBBlob
 from src.entities import Blob, Client
-from src.objects import Visibility
+from src.enums import Visibility
 from src import exceptions
 
 
@@ -77,6 +77,31 @@ def update_blob(
         blob.write(chunk)
 
     return blob
+
+def update_blob_visibility(blob_id: str, user_token: str, visibility: int) -> None:
+    """
+    Updates the visibility of a Blob object in the database.
+
+    Args:
+        blob_id: The ID of the Blob.
+        user_token: The token of the Blob owner.
+        visibility: The new visibility of the Blob.
+
+    Raises:
+        BlobNotFoundError: If the Blob was not found 
+            or the user does not have permission to access the Blob.
+        UserNotExists: If the user token is invalid.
+    """
+    visibility = Visibility(visibility)
+
+    user = Client.fetch_user(user_token)
+
+    blob = user.blobs.get(blob_id)
+
+    if blob is None:
+        raise exceptions.BlobNotFoundError(blob_id)
+
+    blob.visibility = visibility
 
 def delete_blob(blob_id: str, user_token: str) -> None:
     """
@@ -146,7 +171,7 @@ def get_blob(blob_id: str, user_token: str) -> _DBBlob:
     """
     blob = Blob.fetch(blob_id)
 
-    if blob.perms.visibility == Visibility.PUBLIC:
+    if blob.visibility == Visibility.PUBLIC:
         return blob
 
     if user_token is None:
@@ -255,7 +280,7 @@ def get_read_permissions(blob_id: str, user_token: str) -> list[str] | None:
     """
     blob = _get_blob_only_owner(blob_id, user_token)
 
-    if blob.perms.visibility == Visibility.PUBLIC:
+    if blob.visibility == Visibility.PUBLIC:
         return None
 
     return list(blob.allowed_users)

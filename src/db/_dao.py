@@ -43,7 +43,7 @@ class _Dao:
         _query = f'''CREATE TABLE IF NOT EXISTS {self.BLOBS} (
             id TEXT,
             owner TEXT,
-            visibility INTEGER,
+            visibility TEXT,
             PRIMARY KEY (id))'''
 
         self._cursor.execute(_query)
@@ -80,7 +80,7 @@ class _Dao:
         except sqlite3.IntegrityError:
             raise exceptions.BlobAlreadyExistsError(_id) from sqlite3.IntegrityError
 
-    def get_blob(self, _id: str) -> tuple:
+    def get_blob(self, _id: str) -> tuple[str, str, int]:
         """
         Retrieves a blob from the database.
 
@@ -93,7 +93,7 @@ class _Dao:
         Raises:
             BlobNotFoundError: If the blob with the specified ID is not found.
         """
-        _query = f'''SELECT *
+        _query = f'''SELECT id, owner, visibility
             FROM {self.BLOBS}
             WHERE id=?'''
         self._cursor.execute(_query, (_id,))
@@ -210,7 +210,7 @@ class _Dao:
 
         self.bulk_add_perms(_id, users)
 
-    def get_user_perms(self, _id: str, user: str) -> tuple:
+    def get_user_perms(self, _id: str, user: str) -> int:
         """
         Retrieves the permissions of a user for a blob.
 
@@ -219,10 +219,7 @@ class _Dao:
             user: The user whose permissions to retrieve.
 
         Returns:
-            tuple: A tuple representing the permissions.
-
-        Raises:
-            BlobNotFoundError: If the blob with the specified ID is not found.
+            int: The permissions of the user for the blob.
         """
         _query = f'''SELECT perms
             FROM {self.PERMS}
@@ -231,9 +228,9 @@ class _Dao:
 
         _r = self._cursor.fetchone()
 
-        return _r if _r is None else _r[0]
+        return None if _r is None else _r[0]
 
-    def get_blob_perms(self, _id: str) -> list[tuple]:
+    def get_blob_perms(self, _id: str) -> list[tuple[str, int]]:
         """
         Retrieves all permissions for a blob.
 
@@ -243,14 +240,14 @@ class _Dao:
         Returns:
             list[tuple]: A list of tuples representing the permissions.
         """
-        _query = f'''SELECT *
+        _query = f'''SELECT user, perms
             FROM {self.PERMS}
             WHERE id=?'''
         self._cursor.execute(_query, (_id,))
 
         return self._cursor.fetchall()
 
-    def get_blobs(self, user: str) -> list[tuple]:
+    def get_blobs(self, user: str) -> list[str]:
         """
         Retrieves all blobs owned by a user.
 
@@ -260,13 +257,58 @@ class _Dao:
         Returns:
             list[tuple]: A list of tuples representing the blobs.
         """
-        _query = f'''SELECT *
+        _query = f'''SELECT id
             FROM {self.BLOBS}
             WHERE owner=?'''
         self._cursor.execute(_query, (user,))
 
-        return self._cursor.fetchall()
+        return [_t[0] for _t in self._cursor.fetchall()]
 
+    def get_blob_visibility(self, _id: str) -> str:
+        """
+        Retrieves the visibility of a blob.
+
+        Args:
+            _id: The ID of the blob.
+
+        Returns:
+            str: The visibility of the blob.
+        
+        Raises:
+            BlobNotFoundError: If the blob with the specified ID is not found.
+        """
+        _query = f'''SELECT visibility
+            FROM {self.BLOBS}
+            WHERE id=?'''
+        self._cursor.execute(_query, (_id,))
+
+        _r = self._cursor.fetchone()
+
+        if _r is None:
+            raise exceptions.BlobNotFoundError(_id)
+
+        return _r[0]
+
+    def update_blob_visibility(self, _id: str, visibility: str) -> None:
+        """
+        Updates the visibility of a blob.
+
+        Args:
+            _id: The ID of the blob.
+            visibility: The new visibility of the blob.
+
+        Raises:
+            BlobNotFoundError: If the blob with the specified ID is not found.
+        """
+        _query = f'''UPDATE {self.BLOBS}
+            SET visibility=?
+            WHERE id=?'''
+        self._cursor.execute(_query, (visibility, _id))
+
+        if self._cursor.rowcount == 0:
+            raise exceptions.BlobNotFoundError(_id)
+
+        self._conn.commit()
 
     def close(self) -> None:
         """

@@ -11,7 +11,7 @@ import flask
 
 from src import exceptions
 from src import services
-from src import objects
+from src import enums
 from src import db
 
 
@@ -68,7 +68,7 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         res = [
             {
                 "blobId": id,
-                "accessUrl": f"{endpoint}/blobs/{id}"
+                "URL": f"{endpoint}/blobs/{id}"
             } for id in blob_ids
         ]
 
@@ -78,15 +78,15 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
     @app.route(f"{endpoint}/blobs/", methods=["POST"])
     def post_blob() -> flask.Response:
-        _v = flask.request.json_.get('visibility', objects.Visibility.PRIVATE)
+        _v = flask.request.json_.get('visibility', enums.Visibility.PRIVATE)
 
-        visibility = objects.Visibility(_v)
+        visibility = enums.Visibility(_v)
 
         blob_ = services.create_blob(flask.request.user_token, visibility)
 
         return {
             "blobId": blob_.id_,
-            "accessUrl": f"{endpoint}/blobs/{blob_.id_}"
+            "URL": f"{endpoint}/blobs/{blob_.id_}"
         }, 201
 
     @app.route(f"{endpoint}/blobs/<blob>", methods=["PUT"])
@@ -116,19 +116,13 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
         return _hashes
 
-    @app.route(f"{endpoint}/blobs/<blob>/acl/<userId>", methods=["POST"])
-    def post_acl(blob: str, userId: str) -> flask.Response:
-        services.add_read_permission(blob, flask.request.user_token, userId)
+    @app.route(f"{endpoint}/blobs/<blob>/acl/<user>", methods=["DELETE"])
+    def delete_acl(blob: str, user: str) -> flask.Response:
+        services.remove_read_permission(blob, flask.request.user_token, user)
 
         return "", 204
 
-    @app.route(f"{endpoint}/blobs/<blob>/acl/<userId>", methods=["DELETE"])
-    def delete_acl(blob: str, userId: str) -> flask.Response:
-        services.remove_read_permission(blob, flask.request.user_token, userId)
-
-        return "", 204
-
-    @app.route(f"{endpoint}/blobs/<blob>/acl/", methods=["GET"])
+    @app.route(f"{endpoint}/blobs/<blob>/acl", methods=["GET"])
     def get_acl(blob: str) -> flask.Response:
         perms = services.get_read_permissions(blob, flask.request.user_token)
 
@@ -136,10 +130,10 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
             return "", 204
 
         return {
-            "acl": perms
+            "allowed_users": perms
         }
 
-    @app.route(f"{endpoint}/blobs/<blob>/acl/", methods=["PUT"])
+    @app.route(f"{endpoint}/blobs/<blob>/acl", methods=["PUT"])
     def put_acl(blob: str) -> flask.Response:
         new_perms = flask.request.json_.get("acl")
 
@@ -152,7 +146,7 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
         return "", 204
 
-    @app.route(f"{endpoint}/blobs/<blob>/acl/", methods=["PATCH"])
+    @app.route(f"{endpoint}/blobs/<blob>/acl", methods=["PATCH"])
     def patch_acl(blob: str) -> flask.Response:
         new_perms = flask.request.json_.get("acl")
 
@@ -165,6 +159,19 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
         return "", 204
 
+    @app.route(f"{endpoint}/blobs/<blob>/visibility", methods=["PUT"])
+    def patch_visibility(blob: str) -> flask.Response:
+        visibility = flask.request.json_.get("visibility")
+
+        if visibility is None:
+            return {
+                "error": "Missing 'visibility' key in JSON body"
+            }, 400
+
+        services.update_blob_visibility(blob, flask.request.user_token, visibility)
+
+        return "", 204
+
     return (
         before_request,
         get_status,
@@ -174,11 +181,11 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         put_blob,
         delete_blob,
         get_blob_hashes,
-        post_acl,
         delete_acl,
         get_acl,
         put_acl,
         patch_acl,
+        patch_visibility,
 
         handle_blob_not_found,
         handle_user_not_exists,

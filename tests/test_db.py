@@ -7,6 +7,7 @@ from sqlite3 import ProgrammingError, IntegrityError
 from src import exceptions
 from src.db import _DAO
 from src.entities import Blob
+from src.enums import Visibility
 
 
 @staticmethod
@@ -59,10 +60,9 @@ class TestDB(unittest.TestCase):
         self.assertRaises(exceptions.BlobAlreadyExistsError, _DAO.new_blob, self.default_id, None, None)
 
     def test_update_blob(self):
-        _old_owner = self.default_owner
-        _new_owner = _old_owner + '_new'
-        with Blob.update(self.default_id, owner=_new_owner) as _blob:
-            self.assertNotEqual(Blob.fetch(self.default_id).perms.owner, _old_owner)
+        with Blob.fetch(self.default_id) as _b:
+            _b.visibility = Visibility.PUBLIC
+        self.assertEqual(_raw_select_blob(self.default_id)[2], Visibility.PUBLIC.value)
 
     def test_delete_blob(self):
         Blob.delete(self.default_id)

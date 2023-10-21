@@ -51,7 +51,7 @@ class TestServices(unittest.TestCase):
 
         blob = services.create_blob('user_token')
         self.assertIsNotNone(blob)
-        self.assertEqual(blob.perms.visibility, services.Visibility.PRIVATE)
+        self.assertEqual(blob.visibility, services.Visibility.PRIVATE)
 
     @patch('requests.get')
     def test_update_blob_unauthorized(self, mock_get):
