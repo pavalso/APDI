@@ -147,12 +147,13 @@ def get_hash_blob(blob_id: str, user_token: str, hashes_types: str) -> tuple[str
         if hash_type not in _AVAILABLE_HASHES:
             raise ValueError(f"Invalid hash type: {hash_type}")
 
-    res = {
-        hash_type: hashlib.file_digest(blob, hash_type, _bufsize = _BUFF_SIZE).hexdigest()
-        for hash_type in hashes_types
-    }
+    hashes = { }
 
-    return res
+    for hash_type in hashes_types:
+        hashes[hash_type] = hashlib.file_digest(blob, hash_type, _bufsize = _BUFF_SIZE).hexdigest()
+        blob.seek(0)
+
+    return hashes
 
 def get_blob(blob_id: str, user_token: str) -> _DBBlob:
     """
