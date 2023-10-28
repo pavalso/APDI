@@ -185,6 +185,14 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
 
         return "", 204
 
+    @app.route(f"{endpoint}/blobs/<blob>/visibility", methods=["GET"])
+    def get_visibility(blob: str) -> flask.Response:
+        visibility = services.get_blob_visibility(blob, flask.request.user_token)
+
+        return {
+            "visibility": visibility.value
+        }
+
     return (
         before_request,
         get_status,
@@ -199,6 +207,7 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         put_acl,
         patch_acl,
         put_visibility,
+        get_visibility,
 
         handle_blob_not_found,
         handle_user_not_exists,

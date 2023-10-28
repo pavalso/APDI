@@ -319,3 +319,22 @@ def patch_read_permissions(blob_id: str, user_token: str, usernames: set[str]) -
     blob = _get_blob_only_owner(blob_id, user_token)
 
     blob.allowed_users |= usernames
+
+def get_blob_visibility(blob_id: str, user_token: str) -> Visibility:
+    """
+    Gets the visibility of a Blob.
+
+    Args:
+        blob_id: The ID of the Blob.
+        user_token: The token of the Blob owner.
+
+    Returns:
+        Visibility: The visibility of the Blob.
+
+    Raises:
+        BlobNotFoundError: If the Blob was not found.
+        UserNotExists: If the user token is invalid.
+    """
+    blob = _get_blob_only_owner(blob_id, user_token)
+
+    return blob.visibility
