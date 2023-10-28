@@ -6,6 +6,7 @@ from urllib.error import URLError
 from argparse import ArgumentParser
 
 from src import main
+from src import exceptions
 
 
 __usage__ = f"Usage: python \"{__file__}\" [auth_api] [-d db] [-p port] [-l listening] [-s storage]"
@@ -65,7 +66,7 @@ if __name__ == "__main__":
             storage=args.storage,
             auth_api=args.auth_api
             )
-    except RuntimeError:
+    except exceptions.adiauth.ServiceError:
         print(f"[!] Auth API at {args.auth_api} is not running.")
         sys.exit(2)
 

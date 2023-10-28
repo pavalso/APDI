@@ -13,6 +13,7 @@ from src import exceptions
 from src import services
 from src import enums
 from src import db
+from src import entities
 
 
 logger = logging.getLogger("APDI")
@@ -216,8 +217,9 @@ def main(
     os.environ["STORAGE"] = storage
     os.environ["AUTH_API"] = auth_api
 
-    #if not entities.Client.check_connection():
-    #    raise RuntimeError(f"Could not connect to {auth_api}")
+    logger.info("Checking Auth API connection")
+    if not entities.Client.check_connection():
+        raise exceptions.adiauth.ServiceError(url=auth_api, reason="Auth API")
 
     with db.connect(db_path):
         app = flask.Flask(__app__)

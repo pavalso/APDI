@@ -1,4 +1,4 @@
-adiauthcli @ git+https://github.com/ptobiasdiaz/auth_client@5c301bd81093c2438d276221b75a50c3cb65a120
+adiauthcli @ git+https://github.com/ptobiasdiaz/auth_client@5a072a64ae0a6dcdcec72cb287c1b1e47396fd26
 astroid==2.15.8
 blinker==1.6.3
 certifi==2023.7.22

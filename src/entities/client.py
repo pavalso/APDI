@@ -38,7 +38,7 @@ class _LoggedClient(client.Client):
         """
         _api = os.getenv("AUTH_API", "http://localhost:3001")
 
-        super().__init__(_api, admin_token)
+        super().__init__(_api, admin_token, check_service=False)
 
     def create_blob(self, visibility: Visibility) -> _DBBlob:
         """
@@ -65,7 +65,8 @@ class Client:
         Returns:
             A boolean representing the connection status.
         """
-        raise NotImplementedError
+        return _LoggedClient().service_up
+
 
     @staticmethod
     def fetch_user(token: str) -> _LoggedClient:
