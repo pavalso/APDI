@@ -120,10 +120,20 @@
 - **Cuerpo de la Solicitud:**
   ```json
   {
-    "visibility": "PUBLIC" | "PRIVATE"
+    "visibility": "public" | "private"
   }
   ```
 - **Respuesta Exitosa (204 No Content):** Sin contenido.
+
+#### `GET /api/v1/blobs/<id_del_blob>/visibility`
+- **Necesita autenticación:** Si.
+- **Descripción:** Obtiene la visibilidad de un blob específico.
+- **Respuesta Exitosa (200 OK):**
+  ```json
+  {
+    "visibility": "public" | "private"
+  }
+  ```
 
 #### Errores
 - **Error 401 (Unauthorized):** Se devuelve cuando el usuario no está autorizado para realizar la acción.
