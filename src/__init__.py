@@ -80,7 +80,12 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
     def post_blob() -> flask.Response:
         _v = flask.request.json_.get('visibility', enums.Visibility.PRIVATE)
 
-        visibility = enums.Visibility(_v)
+        try:
+            visibility = enums.Visibility(_v)
+        except ValueError:
+            return {
+                "error": "Invalid visibility value"
+            }, 400
 
         blob_ = services.create_blob(flask.request.user_token, visibility)
 
@@ -160,12 +165,19 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         return "", 204
 
     @app.route(f"{endpoint}/blobs/<blob>/visibility", methods=["PUT"])
-    def patch_visibility(blob: str) -> flask.Response:
+    def put_visibility(blob: str) -> flask.Response:
         visibility = flask.request.json_.get("visibility")
 
         if visibility is None:
             return {
                 "error": "Missing 'visibility' key in JSON body"
+            }, 400
+
+        try:
+            visibility = enums.Visibility(visibility)
+        except ValueError:
+            return {
+                "error": "Invalid visibility value"
             }, 400
 
         services.update_blob_visibility(blob, flask.request.user_token, visibility)
@@ -185,7 +197,7 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         get_acl,
         put_acl,
         patch_acl,
-        patch_visibility,
+        put_visibility,
 
         handle_blob_not_found,
         handle_user_not_exists,

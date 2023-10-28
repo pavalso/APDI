@@ -78,7 +78,7 @@ def update_blob(
 
     return blob
 
-def update_blob_visibility(blob_id: str, user_token: str, visibility: int) -> None:
+def update_blob_visibility(blob_id: str, user_token: str, visibility: Visibility) -> None:
     """
     Updates the visibility of a Blob object in the database.
 
@@ -92,8 +92,6 @@ def update_blob_visibility(blob_id: str, user_token: str, visibility: int) -> No
             or the user does not have permission to access the Blob.
         UserNotExists: If the user token is invalid.
     """
-    visibility = Visibility(visibility)
-
     user = Client.fetch_user(user_token)
 
     blob = user.blobs.get(blob_id)
