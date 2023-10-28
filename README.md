@@ -1,148 +1,140 @@
-### Documentación
+### Documentación de la API REST
 
 #### Autenticación
-Para acceder a las siguientes operaciones, debes incluir un token de usuario en la cabecera de la solicitud:
+- **Header:**
+  ```AuthToken: <user_token>```
 
-- **Cabecera de Autenticación:** 
-  - `Authorization: Bearer <user-token>`
-
-#### Obtener un Blob por UUID
-Obtiene el contenido de un blob específico por su UUID.
-
-- **Ruta:** `/blobs/<blob>` (GET)
-- **Descripción:** Obtiene el contenido de un blob específico por su UUID.
-- **Parámetros de solicitud:**
-  - `blob (URL Parameter):` El UUID del blob que se desea obtener.
-- **Respuestas:**
-  - **Código 200 (Éxito):** Se obtuvo el blob con éxito, y se devuelve el contenido binario.
-  - **Código 404 (No encontrado):** El blob con el UUID especificado no se encontró o no tienes permiso para acceder a él.
-    - Ejemplo de respuesta (éxito):
-    ```json
-    {
-        "raw": "blob-binary-data"
-    }
-    ```
-
-#### Obtener todos los Blobs del usuario
-Obtiene el UUID de todos los blobs del usuario.
-
-- **Ruta:** `/blobs/` (GET)
-- **Descripción:** Obtiene el UUID de todos los blobs del usuario.
-- **Respuestas:**
-  - **Código 200 (Éxito):** El usuario está autenticado y se han podido obtener sus blobs.
-  - **Código 404 (No encontrado):** El usuario no está autenticado
-    - Ejemplo de respuesta (éxito):
-    ```json
-    {
-        "blobs": [
-          "UUID1",
-          "UUID2"
-        ]
-    }
-    ```
-
-#### Subir un Blob
-Crea un blob en el servidor y le asigna un UUID único.
-
-- **Ruta:** `/blobs` (POST)
-- **Descripción:** Crea un blob en el servidor y le asigna un UUID único.
-- **Parámetros de solicitud:**
+#### `GET /api/v1/status/`
+- **Necesita autenticación:** No.
+- **Descripción:** Obtiene el estado de la API.
+- **Respuesta Exitosa (200 OK):**
   ```json
   {
-      "visibility": "Visibilidad del blob"
+    "message": "API <nombre_de_la_app> <version_de_la_app> up and running"
   }
   ```
-- **Respuestas:**
-  - **Código 201 (Creado):** El blob se subió con éxito.
-    - Ejemplo de respuesta:
-    ```json
-    {
-        "message": "Blob subido con éxito",
-        "uuid": "generated-uuid"
-    }
-    ```
 
-#### Actualizar un Blob
-Actualiza el contenido de un blob existente utilizando su UUID.
+#### `GET /api/v1/blobs/`
+- **Necesita autenticación:** Si.
+- **Descripción:** Obtiene la lista de blobs del usuario actual.
+- **Respuesta Exitosa (200 OK):**
+  ```json
+  {
+    "blobs": [
+      {
+        "blobId": "<id_del_blob>",
+        "URL": "/api/v1/blobs/<id_del_blob>"
+      },
+      ...
+    ]
+  }
+  ```
 
-- **Ruta:** `/blobs/<blob>` (PUT)
-- **Descripción:** Actualiza el contenido de un blob existente utilizando su UUID.
-- **Parámetros de solicitud:**
-  - `blob (URL Parameter):` El UUID del blob que se desea actualizar.
-  - `raw (binary stream):` El nuevo contenido del blob
-- **Respuestas:**
-  - **Código 200 (Éxito):** El blob se actualizó con éxito.
-  - **Código 404 (No encontrado):** El blob con el UUID especificado no se encontró.
-    - Ejemplo de respuesta:
-    ```json
-    {
-        "error": "Blob no encontrado"
-    }
-    ```
+#### `POST /api/v1/blobs/`
+- **Necesita autenticación:** Si.
+- **Descripción:** Crea un nuevo blob para el usuario actual.
+- **Cuerpo de la Solicitud:**
+  ```json
+  {
+    "visibility": "PUBLIC" | "PRIVATE"
+  }
+  ```
+- **Respuesta Exitosa (201 Created):**
+  ```json
+  {
+    "blobId": "<id_del_blob>",
+    "URL": "/api/v1/blobs/<id_del_blob>"
+  }
+  ```
 
-#### Borrar un Blob
-Elimina un blob existente utilizando su UUID.
+#### `GET /api/v1/blobs/<id_del_blob>`
+- **Necesita autenticación:** No para blobs públicos.
+- **Descripción:** Obtiene un blob específico.
+- **Respuesta Exitosa (200 OK):** Devuelve el blob como un archivo binario.
 
-- **Ruta:** `/blobs/<blob>` (DELETE)
-- **Descripción:** Elimina un blob existente utilizando su UUID.
-- **Parámetros de solicitud:**
-  - `blob (URL Parameter):` El UUID del blob que se desea eliminar.
-- **Respuestas:**
-  - **Código 204 (Sin contenido):** El blob se eliminó con éxito.
-  - **Código 404 (No encontrado):** El blob con el UUID especificado no se encontró.
-    - Ejemplo de respuesta:
-    ```json
-    {
-        "error": "Blob no encontrado"
-    }
-    ```
+#### `PUT /api/v1/blobs/<id_del_blob>`
+- **Necesita autenticación:** Si.
+- **Descripción:** Actualiza un blob existente.
+- **Cuerpo de la Solicitud:** Datos binarios del blob.
+- **Respuesta Exitosa (204 No Content):** Sin contenido.
 
-#### Añadir Permiso de Lectura a un Usuario
-Asigna permisos de lectura de un blob a un usuario.
+#### `DELETE /api/v1/blobs/<id_del_blob>`
+- **Necesita autenticación:** Si.
+- **Descripción:** Elimina un blob existente.
+- **Respuesta Exitosa (204 No Content):** Sin contenido.
 
-- **Ruta:** `/blobs/<blob>/permissions/<username>` (POST)
-- **Descripción:** Asigna permisos de lectura de un blob a un usuario.
-- **Parámetros de solicitud:**
-  - `blob (URL Parameter):` El UUID del blob al que se desean agregar permisos.
-  - `username (URL Parameter):` Datos del usuario al que se le asignarán los permisos.
-- **Respuestas:**
-  - **Código 200 (Éxito):** Se asignaron permisos de lectura al usuario con éxito.
-  - **Código 404 (No encontrado):** El blob con el UUID especificado no se encontró.
-  - **Código 409 (Conflicto):** El usuario ya tiene permisos de lectura para el blob.
+#### `GET /api/v1/blobs/<id_del_blob>/hash?type=<tipo_de_hash>`
+- **Necesita autenticación:** No para blobs públicos.
+- **Descripción:** Obtiene el hash de un blob en el formato especificado.
+- **Parámetros de Consulta:**
+  - `type` (opcional): Tipo de hash (por defecto: "md5").
+- **Respuesta Exitosa (200 OK):** Devuelve el hash del blob.
+  ```json
+  {
+    "md5": "<hash_md5>",
+    "sha256": "<hash_sha256>",
+    ...
+  }
+  ```
 
-#### Quitar Permiso de Lectura a un Usuario
-Revoca los permisos de lectura de un blob a un usuario.
+#### `GET /api/v1/blobs/<id_del_blob>/acl`
+- **Necesita autenticación:** Si.
+- **Descripción:** Obtiene la lista de usuarios con permisos de lectura para un blob específico.
+- **Respuesta Exitosa (200 OK):**
+  ```json
+  {
+    "allowed_users": ["usuario1", "usuario2", ...]
+  }
+  ```
 
-- **Ruta:** `/blobs/<blob>/permissions/<username>` (DELETE)
-- **Descripción:** Revoca los permisos de lectura de un blob a un usuario.
-- **Parámetros de solicitud:**
-  - `blob (URL Parameter):` El UUID del blob del que se desean eliminar permisos.
-  - `username (URL Parameter):` Datos del usuario al que se le revocarán los permisos.
-- **Respuestas:**
-  - **Código 200 (Éxito):** Se revocaron los permisos de lectura al usuario con éxito.
-  - **Código 404 (No encontrado):** El blob con el UUID especificado no se encontró.
-  - **Código 409 (Conflicto):** El usuario no tiene permisos de lectura para el blob.
+#### `PUT /api/v1/blobs/<id_del_blob>/acl`
+- **Necesita autenticación:** Si.
+- **Descripción:** Establece los permisos de lectura para un blob específico.
+- **Cuerpo de la Solicitud:**
+  ```json
+  {
+    "acl": ["usuario1", "usuario2", ...]
+  }
+  ```
+- **Respuesta Exitosa (204 No Content):** Sin contenido.
 
-#### Obtener Sumas Hash del Blob
-Obtén sumas hash (MD5, SHA256, etc.) del contenido de un blob al que tengas permiso de lectura.
+#### `PATCH /api/v1/blobs/<id_del_blob>/acl`
+- **Necesita autenticación:** Si.
+- **Descripción:** Actualiza los permisos de lectura para un blob específico.
+- **Cuerpo de la Solicitud:**
+  ```json
+  {
+    "acl": ["usuario1", "usuario2", ...]
+  }
+  ```
+- **Respuesta Exitosa (204 No Content):** Sin contenido.
 
-- **Ruta:** `/blobs/<blob>/hashes` (GET)
-- **Descripción:** Obtiene sumas hash del contenido del blob.
-- **Parámetros de solicitud:**
-  - `blob (URL Parameter):` El UUID del blob del que se desean obtener las sumas hash.
-- **Respuestas:**
-  - **Código 200 (Éxito):** Se obtuvieron las sumas hash con éxito.
-    - Ejemplo de respuesta:
-    ```json
-    {
-        "md5": "md5-hash-value",
-        "sha256": "sha256-hash-value"
-    }
-    ```
-  - **Código 404 (No encontrado):** El blob con el UUID especificado no se encontró o no tienes permiso para acceder a él.
-    - Ejemplo de respuesta:
-    ```json
-    {
-        "error": "Blob no encontrado"
-    }
-    ```
+#### `DELETE /api/v1/blobs/<id_del_blob>/acl/<nombre_del_usuario>`
+- **Necesita autenticación:** Si.
+- **Descripción:** Elimina los permisos de lectura de un usuario específico para un blob específico.
+- **Respuesta Exitosa (204 No Content):** Sin contenido.
+
+#### `PUT /api/v1/blobs/<id_del_blob>/visibility`
+- **Necesita autenticación:** Si.
+- **Descripción:** Actualiza la visibilidad de un blob específico.
+- **Cuerpo de la Solicitud:**
+  ```json
+  {
+    "visibility": "PUBLIC" | "PRIVATE"
+  }
+  ```
+- **Respuesta Exitosa (204 No Content):** Sin contenido.
+
+#### Errores
+- **Error 401 (Unauthorized):** Se devuelve cuando el usuario no está autorizado para realizar la acción.
+  ```json
+  {
+    "error": "Usuario no autorizado"
+  }
+  ```
+- **Error 404 (Not Found):** Se devuelve cuando el recurso solicitado no se encuentra.
+  ```json
+  {
+    "error": "Recurso no encontrado"
+  }
+  ```
