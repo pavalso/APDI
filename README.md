@@ -80,12 +80,13 @@
 #### `GET /api/v1/blobs/<id_del_blob>/acl`
 - **Necesita autenticación:** Si.
 - **Descripción:** Obtiene la lista de usuarios con permisos de lectura para un blob específico.
-- **Respuesta Exitosa (200 OK):**
+- **Respuesta Exitosa (200 OK) si el blob es privado:**
   ```json
   {
     "allowed_users": ["usuario1", "usuario2", ...]
   }
   ```
+- **Respuesta Exitosa (204 No Content) si el blob es público:** Sin contenido.
 
 #### `PUT /api/v1/blobs/<id_del_blob>/acl`
 - **Necesita autenticación:** Si.
