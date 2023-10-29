@@ -4,9 +4,9 @@ that can be stored in a database and synchronizes with a file in storage
 """
 from uuid import uuid4
 
-from src.db import _DAO
-from src.objects._file_blob import _FileBlob
-from src.enums import Visibility
+from blobsapdi.db import _DAO
+from blobsapdi.objects._file_blob import _FileBlob
+from blobsapdi.enums import Visibility
 
 
 class _DBBlob(_FileBlob):

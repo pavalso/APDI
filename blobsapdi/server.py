@@ -1,25 +1,58 @@
-"""
-This module contains the main entry point for the APDI application.
-"""
-
+import sys
 import os
 import logging
 
 from typing import Callable
+from urllib.parse import urlparse
+from urllib.error import URLError
+from argparse import ArgumentParser
 
 import flask
 
-from src import exceptions
-from src import services
-from src import enums
-from src import db
-from src import entities
+from blobsapdi import exceptions
+from blobsapdi import services
+from blobsapdi import enums
+from blobsapdi import db
+from blobsapdi import entities
+
+from blobsapdi import __app__, __version__, __usage__
 
 
 logger = logging.getLogger("APDI")
 
-__app__ = "APDI"
-__version__ = "v1"
+def _url(url: str) -> str:
+    result = urlparse(url)
+    if all([result.scheme, result.netloc]):
+        return url
+    raise URLError
+
+def _parse_args() -> ArgumentParser:
+    parser = ArgumentParser()
+    parser.add_argument(
+        "auth_api", 
+        type=_url)
+
+    parser.add_argument(
+        "-d", "--db",
+        type=str,
+        default=None)
+
+    parser.add_argument(
+        "-p", "--port", 
+        type=int,
+        default=3002)
+
+    parser.add_argument(
+        "-l", "--listening",
+        type=str,
+        default="0.0.0.0")
+
+    parser.add_argument(
+        "-s", "--storage",
+        type=str,
+        default="storage")
+
+    return parser.parse_args()
 
 def _route_app(app: flask.Flask) -> tuple[Callable]:
     endpoint = f"/api/{__version__}"
@@ -213,15 +246,12 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
         handle_user_not_exists,
         handle_server_error)
 
-def main(
+def _execute(
         port=3002,
         host="0.0.0.0",
         db_path="pyblob.db",
         storage="storage",
         auth_api="http://localhost:3001") -> None:
-    """
-    Creates a DB connection and runs the Flask app.
-    """
 
     os.environ["STORAGE"] = storage
     os.environ["AUTH_API"] = auth_api
@@ -238,3 +268,33 @@ def main(
         app.run(
             host=host,
             port=port)
+
+def main():
+    try:
+        args = _parse_args()
+    except URLError:
+        print(f"[!] Invalid URL.\n{__usage__}")
+        sys.exit(1)
+
+    if args.db is None:
+        args.db = "pyblob.db"
+    elif not os.path.isfile(args.db):
+        print(f"[!] Database file {args.db} does not exist.\n{__usage__}")
+        sys.exit(1)
+
+    try:
+        _execute(
+            port=args.port,
+            host=args.listening,
+            db_path=args.db,
+            storage=args.storage,
+            auth_api=args.auth_api
+            )
+    except exceptions.adiauth.ServiceError:
+        print(f"[!] Auth API at {args.auth_api} is not running.")
+        sys.exit(2)
+
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()

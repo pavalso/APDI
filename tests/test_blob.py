@@ -2,7 +2,7 @@ import unittest
 import os
 import shutil
 
-from src.objects._file_blob import _FileBlob
+from blobsapdi.objects._file_blob import _FileBlob
 
 
 

@@ -4,10 +4,10 @@ import unittest
 
 from sqlite3 import ProgrammingError, IntegrityError
 
-from src import exceptions
-from src.db import _DAO
-from src.entities import Blob
-from src.enums import Visibility
+from blobsapdi import exceptions
+from blobsapdi.db import _DAO
+from blobsapdi.entities import Blob
+from blobsapdi.enums import Visibility
 
 
 @staticmethod

@@ -20,4 +20,4 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint src --fail-under=7.0 --disable=import-error
+        pylint blobsapdi --fail-under=7.0 --disable=import-error

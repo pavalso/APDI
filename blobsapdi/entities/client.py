@@ -6,8 +6,8 @@ import os
 
 from adiauthcli import client
 
-from src.entities.blob import Blob, _DBBlob
-from src.enums import Visibility
+from blobsapdi.entities.blob import Blob, _DBBlob
+from blobsapdi.enums import Visibility
 
 
 class _LoggedClient(client.Client):

@@ -6,11 +6,12 @@ creating, updating, deleting, and retrieving Blob objects from a database.
 import hashlib
 import io
 
-from src._logger import LOGGER
-from src.entities.blob import _DBBlob
-from src.entities import Blob, Client
-from src.enums import Visibility
-from src import exceptions
+from blobsapdi import exceptions
+
+from blobsapdi._logger import LOGGER
+from blobsapdi.entities.blob import _DBBlob, Blob
+from blobsapdi.entities.client import Client
+from blobsapdi.enums import Visibility
 
 
 logger = LOGGER

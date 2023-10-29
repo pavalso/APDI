@@ -8,7 +8,7 @@ import sqlite3
 
 from os import PathLike
 
-from src import exceptions
+from blobsapdi import exceptions
 
 
 logger = logging.getLogger("APDI")

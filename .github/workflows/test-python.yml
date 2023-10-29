@@ -23,10 +23,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install .
         pip install coverage
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with coverage
       run: |
-        coverage run --source="src/db/","src/entities" -m unittest discover tests/ && coverage report --fail-under=75
-        coverage run --source="src/objects","src/exceptions" -m unittest discover tests && coverage report --fail-under=80
-        coverage run --include="src/services/*.py","src/__init__.py" -m unittest discover tests && coverage report --fail-under=50
+        coverage run --source="blobsapdi/db/","blobsapdi/entities" -m unittest discover tests/ && coverage report --fail-under=75
+        coverage run --source="blobsapdi/objects","blobsapdi/exceptions" -m unittest discover tests && coverage report --fail-under=80
+        coverage run --include="blobsapdi/services/*.py","blobsapdi/__init__.py" -m unittest discover tests && coverage report --fail-under=50

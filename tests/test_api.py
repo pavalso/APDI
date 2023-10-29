@@ -8,9 +8,9 @@ import flask
 
 from unittest.mock import patch
 
-from src import services
-from src import exceptions
-from src.db import _DAO
+from blobsapdi import services
+from blobsapdi import exceptions
+from blobsapdi.db import _DAO
 
 
 @staticmethod
