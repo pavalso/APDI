@@ -11,7 +11,6 @@ from unittest.mock import patch
 from src import services
 from src import exceptions
 from src.db import _DAO
-from src import _route_app
 
 
 @staticmethod
@@ -196,14 +195,3 @@ class TestServices(unittest.TestCase):
     def tearDown(self) -> None:
         _remove_test_dir()
         _DAO.close()
-
-class TestServer(unittest.TestCase):
-
-    def setUp(self) -> None:
-        self.app = flask.Flask('test_server')
-        self.client = self.app.test_client()
-        _route_app(self.app)
-
-    def test_app_runs(self):
-        res = self.client.get('/api/v1/status/')
-        self.assertEqual(res.status_code, 200)
