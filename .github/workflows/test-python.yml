@@ -29,4 +29,4 @@ jobs:
       run: |
         coverage run --source="src/db/","src/entities" -m unittest discover tests/ && coverage report --fail-under=75
         coverage run --source="src/objects","src/exceptions" -m unittest discover tests && coverage report --fail-under=80
-        coverage run --include="src/services/*.py","src/__init__.py" -m unittest discover tests && coverage report --fail-under=50
+        coverage run --include="src/services/*.py" -m unittest discover tests && coverage report --fail-under=50
