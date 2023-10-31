@@ -10,7 +10,7 @@
 
 4- Crear una base de datos sqlite3
 
-4- Ejecutar el servidor con ```blob_server <url_servicio_autenticación> --db <ruta_base_datos>```
+5- Ejecutar el servidor con ```blob_server <url_servicio_autenticación> --db <ruta_base_datos>```
 
 Para descargar el cliente CLI vaya a este [repositorio](https://github.com/pavalso/APDI-cli)
 
