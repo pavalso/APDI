@@ -1,3 +1,15 @@
+### Autor: Pablo Valverde Soriano
+
+### Instrucciones de uso
+
+1- Clonar el repositorio
+2- Instalar el repositorio con ```pip install .```
+3- Instalar las dependencias con ```pip install -r requirements.txt```
+4- Crear una base de datos sqlite3
+4- Ejecutar el servidor con ```blob_server <url_servicio_autenticación> --db <ruta_base_datos>```
+
+Para descargar el cliente CLI vaya a este [repositorio](https://github.com/pavalso/APDI-cli)
+
 ### Documentación de la API REST
 
 #### Autenticación
