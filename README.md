@@ -14,6 +14,14 @@
 
 Para descargar el cliente CLI vaya a este [repositorio](https://github.com/pavalso/APDI-cli)
 
+### Ejecutar pruebas
+
+Probar clases de negocio: ```coverage run --source="blobsapdi/objects","blobsapdi/exceptions" -m unittest discover tests && coverage report --fail-under=80```
+
+Probar capa de persistencia: ```coverage run --source="blobsapdi/db/","blobsapdi/entities" -m unittest discover tests/ && coverage report --fail-under=75```
+
+Probar API: ```coverage run --include="blobsapdi/services/*.py","blobsapdi/__init__.py" -m unittest discover tests && coverage report --fail-under=50```
+
 ### Documentación de la API REST
 
 #### Autenticación
