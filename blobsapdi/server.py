@@ -99,10 +99,13 @@ def _route_app(app: flask.Flask) -> tuple[Callable]:
     def get_blobs() -> flask.Response:
         blob_ids = services.get_user_blobs(flask.request.user_token)
 
+        url = flask.request.root_url.rstrip("/")
+        _endpoint = endpoint.lstrip("/")
+
         res = [
             {
                 "blobId": id,
-                "URL": f"{endpoint}/blobs/{id}"
+                "URL": f"{url}/{_endpoint}/blobs/{id}"
             } for id in blob_ids
         ]
 
