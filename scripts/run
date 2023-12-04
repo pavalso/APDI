@@ -1,0 +1,23 @@
+#!/bin/bash
+
+export BLOB_SERVER=blob_server
+
+export RESULT=$( docker container inspect -f '{{.State.Running}}' ${BLOB_SERVER} 2>/dev/null )
+
+if [ "${RESULT}" == "true" ]; then
+    echo "${BLOB_SERVER} is already running"
+    exit 1
+fi
+
+export PORT=${BLOB_SERVICE_PORT:-3002}
+
+export PERSISTENT_STORAGE_FOLDER=$(pwd)/${BLOB_STORAGE_FOLDER:-storage}
+
+docker run -p $PORT \
+            -e BLOB_STORAGE_FOLDER=${PERSISTENT_STORAGE_FOLDER} \
+            -e AUTH_SERVER_URL=http://127.0.0.1:3001 \
+            --user 1000:1000 \
+            --cpus=1 \
+            --memory=2g \
+            --rm \
+            ${BLOB_SERVER}
