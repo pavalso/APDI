@@ -13,6 +13,8 @@ fi
 
 export PORT=${BLOB_SERVICE_PORT:-3002}
 
+export AUTH_SERVER_URL=${AUTH_SERVER_URL:-http://host.docker.internal:3001}
+
 docker run -p $PORT:$PORT \
             -e BLOB_STORAGE_FOLDER=${BLOB_STORAGE_FOLDER} \
             -e AUTH_SERVER_URL=${AUTH_SERVER_URL} \
