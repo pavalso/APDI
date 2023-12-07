@@ -2,18 +2,21 @@ FROM python:3.12.0-alpine
 
 RUN apk update && apk upgrade && apk add --no-cache git
 
-ENV DIRECTORY /APDI
+RUN mkdir /APDI
 
-WORKDIR ${DIRECTORY}
+WORKDIR /APDI
 
 ADD blobsapdi/ blobsapdi/
 ADD setup.py .
 ADD requirements.txt .
+ADD pyblob.db .
 
 RUN python -m venv venv
 RUN source venv/bin/activate
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN pip install .
+
+RUN chown -R 1000:1000 /APDI
 
 ENTRYPOINT blob_server ${AUTH_SERVER_URL} -s ${BLOB_STORAGE_FOLDER}

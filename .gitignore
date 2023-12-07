@@ -4,7 +4,6 @@ apdi_blobs.egg-info
 build
 
 .env
-*.db
 .vscode
 .pytest_cache
 .coverage

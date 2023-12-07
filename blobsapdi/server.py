@@ -35,7 +35,7 @@ def _parse_args() -> ArgumentParser:
     parser.add_argument(
         "-d", "--db",
         type=str,
-        default=None)
+        default="pyblob.db")
 
     parser.add_argument(
         "-p", "--port", 
@@ -279,9 +279,7 @@ def main():
         print(f"[!] Invalid URL.\n{__usage__}")
         sys.exit(1)
 
-    if args.db is None:
-        args.db = "pyblob.db"
-    elif not os.path.isfile(args.db):
+    if not os.path.isfile(args.db):
         print(f"[!] Database file {args.db} does not exist.\n{__usage__}")
         sys.exit(1)
 
