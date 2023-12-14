@@ -1,6 +1,6 @@
 __pycache__
 apdi_blobs.egg-info
-build
+/build
 storage/*
 *.db
 
