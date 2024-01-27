@@ -1,0 +1,28 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blob
+  namespace: appdist 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blob
+  template:
+    metadata:
+      labels:
+        app: blob
+    spec:
+      containers:
+      - name: blob
+        image: neculavalentin/blob_server:latest
+        ports:
+        - containerPort: 8081
+        volumeMounts:
+        - name: nfs-storage
+          mountPath: /path/inside/container
+      volumes:
+      - name: nfs-storage
+        persistentVolumeClaim:
+          claimName: blob-pvc
