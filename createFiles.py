@@ -12,10 +12,28 @@ spec:
     storage: 1Gi
   accessModes:
     - ReadWriteMany
-  nfs:
-    path: /path/to/nfs/share
-    server: nfs-server-ip
+  #nfs:
+  #  path: /path/to/nfs/share #TODO path on nfs server
+  #  server: nfs-server-ip #TODO IP address of nfs server
 """
+
+pv_yaml = """
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: local-pv-{service_name}
+  namespace: appdist
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/data/my-local-storage-{service_name}
+"""
+
 
 # PersistentVolumeClaim for each microservice
 nfs_pvc_yaml_template = """
@@ -31,6 +49,21 @@ spec:
     requests:
       storage: 1Gi
   storageClassName: ""
+"""
+
+pvc_yaml_template = """
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {service_name}-pvc
+  namespace: appdist  
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: "local-storage"
 """
 
 # Deployments
@@ -57,7 +90,7 @@ spec:
         - containerPort: {port}
         volumeMounts:
         - name: nfs-storage
-          mountPath: /path/inside/container
+          mountPath: /path/inside/container #TODO path inside container
       volumes:
       - name: nfs-storage
         persistentVolumeClaim:
@@ -116,15 +149,21 @@ spec:
 
 # Store all configuration files
 config_files = {
-    'nfs_pv.yaml': nfs_pv_yaml,
-    'auth_pvc.yaml': nfs_pvc_yaml_template.format(service_name='auth'),
-    'blob_pvc.yaml': nfs_pvc_yaml_template.format(service_name='blob'),
-    'auth_deployment.yaml': deployment_yaml_template.format(service_name='auth', image='neculavalentin/blob_server', port=8080),
-    'blob_deployment.yaml': deployment_yaml_template.format(service_name='blob', image='neculavalentin/blob_server', port=8081),
-    'auth_service.yaml': service_yaml_template.format(service_name='auth', port=8080),
-    'blob_service.yaml': service_yaml_template.format(service_name='blob', port=8081),
-    'nginx_service.yaml': nginx_service_yaml,
-    #'docker_registry.yaml': docker_registry_yaml
+    #'nfs_pv.yaml': nfs_pv_yaml,
+    'auth_pv.yaml': pv_yaml.format(service_name='auth'),
+    'blob_pv.yaml': pv_yaml.format(service_name='blob'),
+    #'auth_pvc.yaml': nfs_pvc_yaml_template.format(service_name='auth'),
+    #'blob_pvc.yaml': nfs_pvc_yaml_template.format(service_name='blob'),
+    'auth_pvc.yaml': pvc_yaml_template.format(service_name='auth'),
+    'blob_pvc.yaml': pvc_yaml_template.format(service_name='blob'),
+    'auth_deployment.yaml': deployment_yaml_template.format(service_name='auth',
+                                                            image='neculavalentin/auth_server:latest', port=3001),
+    'blob_deployment.yaml': deployment_yaml_template.format(service_name='blob',
+                                                            image='neculavalentin/blob_server:latest', port=3002),
+    'auth_service.yaml': service_yaml_template.format(service_name='auth', port=3001),
+    'blob_service.yaml': service_yaml_template.format(service_name='blob', port=3002),
+    # 'nginx_service.yaml': nginx_service_yaml,
+    # 'docker_registry.yaml': docker_registry_yaml
 }
 
 # Save configuration file in /mnt/data directory
