@@ -14,16 +14,15 @@ spec:
       labels:
         app: auth
     spec:
+      volumes:
+      - name: nfs-volume
+        persistentVolumeClaim:
+          claimName: nfs-volume-claim
       containers:
       - name: auth
         image: neculavalentin/auth_server:latest
         ports:
         - containerPort: 3001
         volumeMounts:
-        - name: local-storage
-          mountPath: /AUTH/db
-      volumes:
-      - name: local-storage
-        persistentVolumeClaim:
-          claimName: auth-pvc
-#todo node affinity, tinte, tollerations
+        - name: nfs-volume
+          mountPath: /nfsshare
