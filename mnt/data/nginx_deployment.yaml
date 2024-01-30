@@ -15,15 +15,14 @@ spec:
         app: webserver
     spec:
       volumes:
-      - name: nfs-volume
-        nfs:
-          server: "nfs-service.appdist.svc.cluster.local"
-          path: "/exports" # "nfs-direct" folder must exist inside "/exports" directory of NFS server
+      - name: data
+        persistentVolumeClaim:
+          claimName: nfs-pvc
       containers:
       - name: webserver
         image: finnllex/nginx-web-server:latest
         ports:
         - containerPort: 80
         volumeMounts:
-        - name: nfs-volume
+        - name: data
           mountPath: /nfsshare
