@@ -19,7 +19,7 @@ spec:
           claimName: nfs-pvc
       containers:
       - name: blob
-        image: neculavalentin/blob_server:latest
+        image: finnllex/blobs-server:latest
         ports:
         - containerPort: 3002
         volumeMounts:
