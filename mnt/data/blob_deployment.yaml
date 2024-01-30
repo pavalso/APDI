@@ -1,4 +1,3 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,7 +20,7 @@ spec:
         - containerPort: 3002
         volumeMounts:
         - name: local-storage
-          mountPath: /app/data
+          mountPath: /storage
       volumes:
       - name: local-storage
         persistentVolumeClaim:
