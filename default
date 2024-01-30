@@ -1,14 +1,14 @@
 server {
         listen 80 default_server;
         listen [::]:80 default_server;
-        root /shared/html;
+        root /shared/public/html;
         server_name _;
         location / {
                 try_files $uri $uri/ =404;
         }
         error_page 404 /custom_404.html;
         location = /custom_404.html {
-                root /shared/html;
+                root /nfsshare/public/html;
                 internal;
         }
 }

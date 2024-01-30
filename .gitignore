@@ -10,4 +10,3 @@ storage/*
 .coverage
 htmlcov
 logs.txt
-mnt/

@@ -1,0 +1,29 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webserver
+  namespace: appdist 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webserver
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+      volumes:
+      - name: nfs-volume
+        nfs:
+          server: "nfs-service.appdist.svc.cluster.local"
+          path: "/exports" # "nfs-direct" folder must exist inside "/exports" directory of NFS server
+      containers:
+      - name: webserver
+        image: finnllex/nginx-web-server:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nfs-volume
+          mountPath: /nfsshare
