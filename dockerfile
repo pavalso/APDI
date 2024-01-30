@@ -19,4 +19,4 @@ RUN pip install .
 
 RUN chown -R 1000:1000 /APDI
 
-ENTRYPOINT blob_server http://auth-svc/api/ -s storage
+ENTRYPOINT blob_server http://auth-svc -s storage

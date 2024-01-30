@@ -1,0 +1,17 @@
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-blob
+  namespace: appdist
+  labels:
+    type: blob
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/data/my-local-storage-blob
