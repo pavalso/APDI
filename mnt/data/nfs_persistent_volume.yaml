@@ -9,6 +9,8 @@ spec:
     storage: 1Gi
   accessModes:
     - ReadWriteMany
-  nfs:
-    server: "nfs-service.appdist.svc.cluster.local"
-    path: "/" # "pvc" folder must exist in "/exports" directory of NFS server
+  hostPath:
+    path: "/mnt/data"
+#  nfs:
+#    server: "nfs-service.appdist.svc.cluster.local"
+#    path: "/" # "pvc" folder must exist in "/exports" directory of NFS server

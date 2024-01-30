@@ -14,14 +14,14 @@ spec:
         app: blob
     spec:
       volumes:
-      - name: nfs-volume
+      - name: data
         persistentVolumeClaim:
-          claimName: nfs-volume-claim
+          claimName: nfs-pvc
       containers:
       - name: blob
         image: neculavalentin/blob_server:latest
         ports:
         - containerPort: 3002
         volumeMounts:
-        - name: nfs-volume
+        - name: data
           mountPath: /nfsshare
