@@ -7,7 +7,7 @@ metadata:
     nginx.ingress.kubernetes.io/ingress-class: "nginx"
 spec:
   rules:
-    - host: prueba.com
+    - host: apiweb.com
       http:
         paths:
           - path: /
@@ -17,7 +17,7 @@ spec:
                 name: webserver
                 port:
                   number: 8080
-    - host: blobs.com
+    - host: blobs.apiweb.com
       http:
         paths:
           - path: /
@@ -27,7 +27,7 @@ spec:
                 name: blob-svc
                 port:
                   number: 80
-    - host: auth.com
+    - host: auth.apiweb.com
       http:
         paths:
           - path: /

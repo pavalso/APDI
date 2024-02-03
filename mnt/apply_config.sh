@@ -1,3 +1,5 @@
+kubectl create namespace appdist
+minikube addons enable ingress
 kubectl apply -f ./mnt/data/nfs_persistent_volume.yaml
 kubectl apply -f ./mnt/data/nfs_persistent_volume_claim.yaml
 kubectl apply -f ./mnt/data/auth_deployment.yaml
