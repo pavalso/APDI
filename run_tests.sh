@@ -17,14 +17,14 @@ export AUTH_PID=$!
 
 trap "kill $AUTH_PID; ./scripts/stop" EXIT
 
-wait_ready http://localhost:5000
+wait_ready https://auth.apiweb.com/
 
-export AUTH_SERVER_URL=http://host.docker.internal:5000
+export AUTH_SERVER_URL=https://auth.apiweb.com/
 
 ./scripts/run &
 
-wait_ready http://localhost:3002
+wait_ready https://blobs.apiweb.com/
 
 echo "Running tests"
 
-python3 gentraf/gentraf http://localhost:3002
+python3 gentraf/gentraf https://blobs.apiweb.com/
