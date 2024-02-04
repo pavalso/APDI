@@ -7,6 +7,7 @@ import logging
 import sqlite3
 
 from os import PathLike
+from threading import Lock
 
 from blobsapdi import exceptions
 
@@ -19,6 +20,8 @@ class _Dao:
     """
     BLOBS = 'blobs'
     PERMS = 'perms'
+
+    LOCK = Lock()
 
     def __init__(self) -> None:
         """
@@ -75,8 +78,9 @@ class _Dao:
             VALUES (?, ?, ?)'''
 
         try:
-            self._cursor.execute(_query, (_id, owner, visibility))
-            self._conn.commit()
+            with _Dao.LOCK:
+                self._cursor.execute(_query, (_id, owner, visibility))
+                self._conn.commit()
         except sqlite3.IntegrityError:
             raise exceptions.BlobAlreadyExistsError(_id) from sqlite3.IntegrityError
 
@@ -96,14 +100,16 @@ class _Dao:
         _query = f'''SELECT id, owner, visibility
             FROM {self.BLOBS}
             WHERE id=?'''
-        self._cursor.execute(_query, (_id,))
 
-        _r = self._cursor.fetchone()
+        with _Dao.LOCK:
+            self._cursor.execute(_query, (_id,))
 
-        if _r is None:
-            raise exceptions.BlobNotFoundError(_id)
+            _r = self._cursor.fetchone()
 
-        return _r
+            if _r is None:
+                raise exceptions.BlobNotFoundError(_id)
+
+            return _r
 
     def update_blob(self, _id: str, owner: str, visibility: int = 0) -> None:
         """
@@ -120,12 +126,14 @@ class _Dao:
         _query = f'''UPDATE {self.BLOBS}
             SET owner=?, visibility=?
             WHERE id=?'''
-        self._cursor.execute(_query, (owner, visibility, _id))
 
-        if self._cursor.rowcount == 0:
-            raise exceptions.BlobNotFoundError(_id)
+        with _Dao.LOCK:
+            self._cursor.execute(_query, (owner, visibility, _id))
 
-        self._conn.commit()
+            if self._cursor.rowcount == 0:
+                raise exceptions.BlobNotFoundError(_id)
+
+            self._conn.commit()
 
     def delete_blob(self, _id: str) -> None:
         """
@@ -139,12 +147,14 @@ class _Dao:
         """
         _query = f'''DELETE FROM {self.BLOBS}
             WHERE id=?'''
-        self._cursor.execute(_query, (_id,))
+  
+        with _Dao.LOCK:
+            self._cursor.execute(_query, (_id,))
 
-        if self._cursor.rowcount == 0:
-            raise exceptions.BlobNotFoundError(_id)
+            if self._cursor.rowcount == 0:
+                raise exceptions.BlobNotFoundError(_id)
 
-        self._conn.commit()
+            self._conn.commit()
 
     def add_perms(self, _id: str, user: str) -> None:
         """ 
@@ -173,8 +183,9 @@ class _Dao:
         _query = f'''INSERT OR IGNORE INTO {self.PERMS} (id, user, perms)
             VALUES (?, ?, ?)'''
 
-        self._cursor.executemany(_query, [(_id, user, 0) for user in users])
-        self._conn.commit()
+        with _Dao.LOCK:
+            self._cursor.executemany(_query, [(_id, user, 0) for user in users])
+            self._conn.commit()
 
     def remove_perms(self, _id: str, user: str) -> None:
         """ 
@@ -189,9 +200,10 @@ class _Dao:
         """
         _query = f'''DELETE FROM {self.PERMS}
             WHERE id=? AND user=?'''
-        self._cursor.execute(_query, (_id, user))
 
-        self._conn.commit()
+        with _Dao.LOCK:
+            self._cursor.execute(_query, (_id, user))
+            self._conn.commit()
 
     def replace_perms(self, _id: str, users: set[str]) -> None:
         """
@@ -206,7 +218,9 @@ class _Dao:
         """
         _query = f'''DELETE FROM {self.PERMS}
             WHERE id=?'''
-        self._cursor.execute(_query, (_id,))
+
+        with _Dao.LOCK:
+            self._cursor.execute(_query, (_id,))
 
         self.bulk_add_perms(_id, users)
 
@@ -224,11 +238,11 @@ class _Dao:
         _query = f'''SELECT perms
             FROM {self.PERMS}
             WHERE id=? AND user=?'''
-        self._cursor.execute(_query, (_id, user))
 
-        _r = self._cursor.fetchone()
-
-        return None if _r is None else _r[0]
+        with _Dao.LOCK:
+            self._cursor.execute(_query, (_id, user))
+            _r = self._cursor.fetchone()
+            return None if _r is None else _r[0]
 
     def get_blob_perms(self, _id: str) -> list[tuple[str, int]]:
         """
@@ -243,9 +257,10 @@ class _Dao:
         _query = f'''SELECT user, perms
             FROM {self.PERMS}
             WHERE id=?'''
-        self._cursor.execute(_query, (_id,))
 
-        return self._cursor.fetchall()
+        with _Dao.LOCK:
+            self._cursor.execute(_query, (_id,))
+            return self._cursor.fetchall()
 
     def get_blobs(self, user: str) -> list[str]:
         """
@@ -260,9 +275,10 @@ class _Dao:
         _query = f'''SELECT id
             FROM {self.BLOBS}
             WHERE owner=?'''
-        self._cursor.execute(_query, (user,))
 
-        return [_t[0] for _t in self._cursor.fetchall()]
+        with _Dao.LOCK:
+            self._cursor.execute(_query, (user,))
+            return [_t[0] for _t in self._cursor.fetchall()]
 
     def get_blob_visibility(self, _id: str) -> str:
         """
@@ -280,14 +296,15 @@ class _Dao:
         _query = f'''SELECT visibility
             FROM {self.BLOBS}
             WHERE id=?'''
-        self._cursor.execute(_query, (_id,))
 
-        _r = self._cursor.fetchone()
+        with _Dao.LOCK:
+            self._cursor.execute(_query, (_id,))
+            _r = self._cursor.fetchone()
 
-        if _r is None:
-            raise exceptions.BlobNotFoundError(_id)
+            if _r is None:
+                raise exceptions.BlobNotFoundError(_id)
 
-        return _r[0]
+            return _r[0]
 
     def update_blob_visibility(self, _id: str, visibility: str) -> None:
         """
@@ -303,12 +320,14 @@ class _Dao:
         _query = f'''UPDATE {self.BLOBS}
             SET visibility=?
             WHERE id=?'''
-        self._cursor.execute(_query, (visibility, _id))
 
-        if self._cursor.rowcount == 0:
-            raise exceptions.BlobNotFoundError(_id)
+        with _Dao.LOCK:
+            self._cursor.execute(_query, (visibility, _id))
 
-        self._conn.commit()
+            if self._cursor.rowcount == 0:
+                raise exceptions.BlobNotFoundError(_id)
+
+            self._conn.commit()
 
     def close(self) -> None:
         """
