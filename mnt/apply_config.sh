@@ -11,4 +11,9 @@ kubectl apply -f ./mnt/data/nginx_service.yaml
 kubectl apply -f ./mnt/data/nginx_ingress.yaml
 minikube ssh "sudo mkdir -p /mnt/data/public/html"
 minikube cp ./shared/html/index.html /mnt/data/public/html/index.html
-minikube cp ./shared/html/custom_404.html /mnt/data/public/html/custom_404.html
+minikube cp ./shared/html/main.e5fa738b5e4e904b.js /mnt/data/public/html/main.e5fa738b5e4e904b.js
+minikube cp ./shared/html/polyfills.b5d4d07516bf0fe7.js /mnt/data/public/html/polyfills.b5d4d07516bf0fe7.js
+minikube cp ./shared/html/runtime.5b652e8d577e1cdf.js /mnt/data/public/html/runtime.5b652e8d577e1cdf.js
+minikube cp ./shared/html/styles.0faa001c8f0f182f.css /mnt/data/public/html/styles.0faa001c8f0f182f.css
+minikube cp ./shared/users.json /mnt/data/users.json
+minikube cp ./shared/pyblob.db /mnt/data/pyblob.db

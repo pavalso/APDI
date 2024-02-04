@@ -9,7 +9,7 @@ WORKDIR /APDI
 ADD blobsapdi/ blobsapdi/
 ADD setup.py .
 ADD requirements.txt .
-ADD pyblob.db .
+ADD pyblob.db /nfsshare/pyblob.db
 
 RUN python -m venv venv
 RUN source venv/bin/activate
@@ -19,4 +19,4 @@ RUN pip install .
 
 RUN chown -R 1000:1000 /APDI
 
-ENTRYPOINT blob_server http://auth-svc -s /nfsshare/storage
+ENTRYPOINT blob_server http://auth-svc -s /nfsshare/storage --db /nfsshare/pyblob.db
