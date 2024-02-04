@@ -1,7 +1,7 @@
 server {
         listen 80 default_server;
         listen [::]:80 default_server;
-        root /shared/public/html;
+        root /nfsshare/public/html;
         server_name _;
         location / {
                 try_files $uri $uri/ =404;
