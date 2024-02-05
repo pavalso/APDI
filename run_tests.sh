@@ -17,14 +17,14 @@ export AUTH_PID=$!
 
 trap "kill $AUTH_PID; ./scripts/stop" EXIT
 
-wait_ready https://auth.apiweb.com/
+wait_ready http://auth.apiweb.com/
 
-export AUTH_SERVER_URL=https://auth.apiweb.com/
+export AUTH_SERVER_URL=http://auth.apiweb.com/
 
-./scripts/run &
+./run &
 
-wait_ready https://blobs.apiweb.com/
+wait_ready http://blobs.apiweb.com/
 
 echo "Running tests"
 
-python3 gentraf/gentraf https://blobs.apiweb.com/
+python3 gentraf/gentraf http://blobs.apiweb.com/
